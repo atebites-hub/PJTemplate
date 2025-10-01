@@ -1,0 +1,38 @@
+# Dependencies
+node_modules/
+*.log
+.DS_Store
+.env
+
+# Builds
+dist/
+build/
+*.min.js
+
+# Tests
+coverage/
+.nyc_output/
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+
+# OS
+Thumbs.db
+.DS_Store
+
+# Rust (if used)
+target/
+Cargo.lock
+
+# Python (if used)
+__pycache__/
+*.pyc
+.venv/
+
+# General
+*.tmp
+*.bak
+
+Assumptions: Customize for your stack (e.g., add Python venv). Known Issues: May need repo-specific ignores (e.g., Solana keys).
