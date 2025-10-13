@@ -14,7 +14,7 @@ Follow the layout in `/docs/agents/file_structure_doc.md` for modularity.
 
 ## Key Documents
 - **AGENTS.md**: Rules for AI agents (e.g., Cursor, Claude).
-- **scratchpad.md**: Current tasks and progress.
+- **Memory System**: Tasks and progress via per-task memories and agent todos.
 - **Implementation Plan**: Sprint roadmap in `/docs/agents/implementation_plan.md`.
 
 ## Contributing

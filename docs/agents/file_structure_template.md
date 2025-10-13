@@ -15,8 +15,8 @@ All projects must follow this root structure to ensure cleanliness and agent coh
 
 ```
 root/
-├── AGENTS.md                    # AI agent rules and context boundaries
-├── scratchpad.md               # Current tasks and progress tracking
+├── AGENTS.md                    # AI agent rules and context boundaries (program)
+├── User_Rules_Template.md      # Platform tool bindings (Cursor/Kilo variants optional)
 ├── README.md                   # Project overview and quick start
 ├── .env.example               # Environment variables template
 ├── .gitignore                 # Git ignore patterns
@@ -169,12 +169,12 @@ docs/
 ```
 
 ## Configuration and Environment
-**Root Files**: Project configuration and environment setup
+**Root Files**: Project configuration and environment setup (memory-aware)
 
 - **`.env.example`**: Template for environment variables (API keys, database URLs)
 - **`.gitignore`**: Git ignore patterns for secrets, build artifacts, dependencies
 - **`package.json`**: Dependencies, scripts, and project metadata
-- **`scratchpad.md`**: Current tasks, progress tracking, and agent communication
+- **`User_Rules_Cursor_Template.md` / `User_Rules_KiloCode_Template.md`**: Platform-specific user rules for memory + indexing + todos
 - **`README.md`**: Project overview, setup instructions, and AGENTS.md reference
 
 ## Interoperability and Data Flow

@@ -12,7 +12,7 @@ Agentic coding represents a paradigm shift in software development where AI agen
 - **📋 TCREI Task Framework**: Structured task decomposition (Task, Context, Rules, Examples, Iteration) for reliable execution
 - **📚 Living Documentation**: Mandatory documentation updates ensure project knowledge remains current and accessible
 - **🔒 Quality Gates**: Built-in testing requirements, security scans, and validation protocols
-- **🤝 Agent Communication Hub**: Centralized scratchpad.md for seamless human-AI-agent coordination
+- **🤝 Memory-Aware Workflow**: Shared memory + semantic code search
 - **🧪 Test-Driven Development**: Integrated testing workflows with 80%+ coverage requirements
 - **📊 Progress Tracking**: Visual project status boards and milestone management
 - **🔄 Intellectual Rigor**: Built-in assumption analysis and critical thinking frameworks
@@ -43,7 +43,7 @@ PJTemplate/
 │   ├── integration/    # Integration tests
 │   └── security/       # Security tests
 ├── scripts/             # Build, test, and deployment scripts
-├── scratchpad.md        # Central project management hub
+├── User_Rules_Template.md  # Platform tool bindings; see Cursor/Kilo variants
 └── AGENTS.md           # Root-level agent rules (copy of docs/agents/AGENTS.md)
 ```
 
@@ -89,7 +89,7 @@ pip install -r requirements.txt  # for Python projects
 # Run tests to ensure everything works
 ./scripts/test-suite.sh
 
-# Open scratchpad.md and start your first sprint!
+# Open `/docs/agents/implementation_plan.md`, pick your first sprint/task, and use the platform's memory + todo tools.
 ```
 
 ## 📖 How to Use This Template Effectively
@@ -98,17 +98,17 @@ pip install -r requirements.txt  # for Python projects
 1. **Start with Core Documents**: Begin by filling out the 9 documents in `/docs/agents/` to establish your project foundation
 2. **Define Clear Boundaries**: Use `AGENTS.md` to set scope limitations for AI agents
 3. **Plan in Sprints**: Use the Implementation Plan to break work into manageable phases
-4. **Monitor Progress**: Use `scratchpad.md` as your daily project dashboard
+4. **Monitor Progress**: Use memory records (Decisions/Lessons) and agent todos as your daily project dashboard
 
 ### For AI Agents (Cursor, Claude, etc.)
 1. **Read the Rules**: Always start by reading `AGENTS.md` for project scope and guidelines
-2. **Check Current Status**: Review `scratchpad.md` for active tasks and progress
+2. **Check Current Status**: Review `/docs/agents/implementation_plan.md` and recent memory records
 3. **Follow TCREI Format**: Structure all tasks using Task-Context-Rules-Examples-Iteration
 4. **Update Documentation**: Maintain `/docs/code/` and `/docs/tests/` as you work
-5. **Communicate via Scratchpad**: Use `scratchpad.md` for progress updates and questions
+5. **Use Memory + Todos**: Persist Decisions/Lessons and manage tasks via agent todo tools
 
 ### For Development Teams
-1. **Collaborative Planning**: Use the intellectual sparring sections in `scratchpad.md`
+1. **Collaborative Planning**: Capture intellectual sparring as concise task memories (assumptions, counterpoints, alternatives)
 2. **Code Quality**: Maintain 80%+ test coverage and run security scans
 3. **Documentation First**: Update documentation before marking tasks complete
 4. **Regular Sync**: Use the Project Status Board for sprint planning and reviews

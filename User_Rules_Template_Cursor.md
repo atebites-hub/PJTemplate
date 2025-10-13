@@ -19,11 +19,9 @@
 
 ## Memory System Bindings
 - Follow `AGENTS.md` Memory System. Use the mappings below for your platform:
-    - Semantic search: `codebase_search` (via Codebase Indexing)
-    - Create memory entities: `create_entities`
-    - Update memory (facts/links): `add_observations`, `create_relations`
-    - Delete memory: `delete_entities`, `delete_observations`, `delete_relations`
-    - Recall/inspect: `search_nodes`, `open_nodes`, `read_graph`
+    - Semantic search: `codebase_search`
+    - Memory records: `update_memory` with actions `create`/`update`/`delete` (automatic recall; on-demand listing supported)
+    - Agent todos: `todo_write` with one `in_progress` at a time; mark `completed` immediately on finish
 
 # Workspace responsibilities:
 - When planning, anchor updates in `/docs/agents/implementation_plan.md` (TCREI) and persist analysis as Decisions/Lessons (memory records). Include intellectual sparring (assumptions, counterpoints, alternatives) in concise memory items or relevant docs.
