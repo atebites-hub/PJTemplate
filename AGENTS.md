@@ -1,16 +1,23 @@
 # AGENTS.md - Project Rules
 
+## Guidelines for Filling Out This Template
+- Replace [Project Name] with your project's name (e.g., "My API Service" or "Game App").
+- Set [Number] to the count of core docs (default 9; adjust if needed).
+- Customize consultation/quality gates for your domain (e.g., add "API rate limits" for server-heavy projects).
+- For multi-agent use: Ensure links work across tools (e.g., mdc: for Markdown previews); test in Cursor/Claude.
+- Reference repo structure: Store this as root/AGENTS.md; link to /file_structure.md for agent file impacts.
+- When transforming this template repository into the user's desired repository, first consult with the user in detail their project requirements.
+- For each template file being updated, iterate in detail with the user over each section, ensuring that the document matches the user's preferences.
+
 ## Memory System
 
 This project uses a memory-aware architecture to coordinate agents and persist task context. Each task lives as a single memory item that is updated over time.
-
-Reference template for new tasks in memories: `memory_template.md`.
-
+Reference template for new tasks in memories: `docs/memory_template.md`.
 Workflow:
 1. At task start:
    - Look up the task in memory by ID/name. If it exists, open it and resume using its current contents.
    - If it does not exist, read the entry from `/docs/agents/implementation_plan.md`, then create a new task memory using `memory_template.md` as the structure and populate it from the plan.
-   - If the task is not present in the Implementation Plan, consult the user or create a new task memory using `memory_template.md` and proceed.
+   - If the task is not present in the Implementation Plan, consult the user and create a new task memory using `memory_template.md` and proceed.
    - Run a broad → scoped `codebase_search` to locate relevant modules/patterns.
 2. Retrieval triggers:
    - Task start: recall domain memories; run broad → scoped `codebase_search` to locate modules/patterns.
@@ -19,19 +26,14 @@ Workflow:
    - On completion: mark Status=completed; summarize Lessons; reconcile the agent todo.
 3. Planning & analysis: Capture Background & Motivation, Key Challenges & Analysis, and Feedback & Assistance within the task memory; promote durable insights into Decisions/Lessons memories when appropriate.
 
-Routine summary (for consistency with User Rules):
+Routine summary:
 - Receive task → consult existing task memories → conduct semantic `codebase_search`.
 - If memory found → resume work; else consult Implementation Plan to create a new task memory; if absent from plan → consult user or create the memory and proceed.
 - Update task memory incrementally upon every todo during execution (Status and Lessons: Background & Motivation, Key Challenges & Analysis, Feedback & Assistance, Learnings) and manage progress via the agent todo system.
 - On completion → mark todo completed and record a final Lesson.
 
-Homogenized tools (program-level):
-- **Semantic Code Search (`codebase_search`)**: Find code by meaning (not exact text). Start broad (whole repo) → re-run scoped; optionally limit to PRs.
-- **Memory Records**: Persist/recall Decisions, Lessons, Preferences as short, titled notes (one concept per memory). Naming: “Decision: <area> — <final> — <rationale>”, “Lesson: <topic> — <insight/risks/next>”.
-- **Agent To-Dos (`todo_write`)**: Maintain a structured list; only one `in_progress`; mark `completed` immediately when done; reconcile before/after edits.
-
-Platform bindings (map program concepts to native tools):
-- See `## Memory System Bindings` for platform specific bindings to conduct the Memory System workflow.
+`Memory System` tool bindings (maps workflow and routine tasks to native tools):
+- See `## Memory System Bindings` for `Memory System` tool bindings to conduct the `Memory System` workflow.
 
 ## Project Scope Definition
 
@@ -51,14 +53,6 @@ The following [Number] documents in `/docs/agents/` define your context boundary
 8. **[Testing Guidelines.md](mdc:docs/agents/Testing Guidelines.md)** - Describes test types, setup, and sprint-end checks.
 9. **[Documentation Guidelines.md](mdc:docs/agents/Documentation Guidelines.md)** - Defines doc formats, policies, and maintenance.
 
-## Guidelines for Filling Out This Template
-- Replace [Project Name] with your project's name (e.g., "My API Service" or "Game App").
-- Set [Number] to the count of core docs (default 9; adjust if needed).
-- Customize consultation/quality gates for your domain (e.g., add "API rate limits" for server-heavy projects).
-- For multi-agent use: Ensure links work across tools (e.g., mdc: for Markdown previews); test in Cursor/Claude.
-- Reference repo structure: Store this as root/AGENTS.md; link to /file_structure.md for agent file impacts.
-- When transforming this template repository into the user's desired repository, first consult with the user in detail their project requirements.
-- For each template file being updated, iterate in detail with the user over each section, ensuring that the document matches the user's preferences.
 
 ## Development Workflow Requirements
 
