@@ -13,16 +13,173 @@ This document outlines the file organization for [Project Name], ensuring modula
 ## Standard Repo Layout (Mandatory)
 All projects must follow this root structure to ensure cleanliness and agent cohesion. Deviations require explicit user approval.
 
-[Tree: e.g., root/ ├── AGENTS.md │ ├── scratchpad.md │ ├── README.md │ ├── .env │ ├── source/ │   ├── client/ │   └── [backend]/ ├── scripts/ ├── tests/ └── docs/ Assumptions: [e.g., "Modular by layer"]; Known Issues: [e.g., "Cross-lang deps"].]
+```
+root/
+├── AGENTS.md                    # AI agent rules and context boundaries
+├── scratchpad.md               # Current tasks and progress tracking
+├── README.md                   # Project overview and quick start
+├── .env.example               # Environment variables template
+├── .gitignore                 # Git ignore patterns
+├── package.json               # Dependencies and scripts (if applicable)
+├── source/                    # Main application code
+│   ├── client/               # Client-side code
+│   │   ├── components/       # Reusable UI components
+│   │   ├── pages/           # Page components/routes
+│   │   ├── hooks/           # Custom React hooks (if applicable)
+│   │   ├── utils/           # Client-side utilities
+│   │   └── styles/          # CSS/styling files
+│   └── server/              # Backend/server-side code
+│       ├── routes/          # API routes/endpoints
+│       ├── models/          # Data models/schemas
+│       ├── middleware/      # Express middleware (if applicable)
+│       ├── services/        # Business logic services
+│       └── utils/           # Server-side utilities
+├── scripts/                  # Build and deployment scripts
+│   ├── setup.sh            # Initial project setup
+│   ├── test-suite.sh       # Run all tests
+│   ├── build.sh            # Build for production
+│   └── deploy.sh           # Deployment script
+├── tests/                   # Test suites
+│   ├── unit/               # Unit tests
+│   ├── integration/        # Integration tests
+│   ├── e2e/               # End-to-end tests
+│   ├── security/          # Security tests
+│   └── performance/       # Performance tests
+└── docs/                   # Documentation
+    ├── agents/            # AI agent context documents
+    ├── code/              # Code documentation
+    ├── tests/             # Test documentation
+    └── api/               # API documentation (if applicable)
+```
 
-## [Layer: e.g., Client-Side]
-[Root: /client; Structure: Tree with files; Browser Storage: [storage] keys. Example: /source/client/app.js. Assumptions: [e.g., "IndexedDB limits"]; Known Issues: [e.g., "Clear on uninstall"].]
+**Assumptions**: Modular by layer, clear separation of concerns, AI-friendly structure
+**Known Issues**: Cross-language dependencies may require additional configuration
 
-## [Backend Layer: e.g., [Backend]]
-[Root: /[backend-dir]; Structure: Tree; Storage: Examples. Assumptions: [e.g., "DHT sync"]; Known Issues: [e.g., "Peer latency"].]
+## Client-Side Structure
+**Root**: `/source/client/`
+**Purpose**: Client application code, UI components, and client-side logic
 
-## [Other Layers: e.g., [Storage]]
-[Root: /[storage-dir]; Structure: Tree; Storage: Hashes. Assumptions: [e.g., "Content addressing"]; Known Issues: [e.g., "Offline fetch"].]
+```
+source/client/
+├── components/           # Reusable UI components
+│   ├── Button.jsx      # Example: Reusable button component
+│   ├── Modal.jsx       # Example: Modal dialog component
+│   └── index.js        # Component exports
+├── pages/              # Page components/routes
+│   ├── Home.jsx        # Example: Home page component
+│   ├── Login.jsx       # Example: Login page component
+│   └── Dashboard.jsx   # Example: Dashboard page component
+├── hooks/              # Custom React hooks (if using React)
+│   ├── useAuth.js      # Example: Authentication hook
+│   └── useApi.js       # Example: API data fetching hook
+├── utils/              # Client-side utilities
+│   ├── api.js          # API client functions
+│   ├── validation.js   # Form validation utilities
+│   └── storage.js      # Local storage utilities
+├── styles/             # CSS/styling files
+│   ├── globals.css     # Global styles
+│   ├── components.css  # Component-specific styles
+│   └── variables.css   # CSS custom properties
+└── index.js            # Application entry point
+```
 
-## Notes
-[Interoperability: "Client fetches from [storage]"; etc. Include update policy. Assumptions: [e.g., "Version control"]; Known Issues: [e.g., "Merge conflicts"]. .env: For secrets (gitignore it); scratchpad.md: For task tracking; README.md: Overview with AGENTS.md link.]
+**Browser Storage**: IndexedDB for offline data, localStorage for user preferences
+**Assumptions**: Modern browser support (ES6+), responsive design
+**Known Issues**: Browser compatibility, storage size limits
+
+## Server-Side Structure
+**Root**: `/source/server/`
+**Purpose**: Backend API, business logic, and data management
+
+```
+source/server/
+├── routes/             # API routes/endpoints
+│   ├── auth.js        # Example: Authentication routes
+│   ├── users.js       # Example: User management routes
+│   └── index.js       # Route registration
+├── models/            # Data models/schemas
+│   ├── User.js        # Example: User data model
+│   ├── Product.js     # Example: Product data model
+│   └── index.js       # Model exports
+├── middleware/        # Express middleware (if using Express)
+│   ├── auth.js        # Example: Authentication middleware
+│   ├── validation.js  # Example: Request validation
+│   └── errorHandler.js # Example: Error handling middleware
+├── services/          # Business logic services
+│   ├── authService.js # Example: Authentication service
+│   ├── emailService.js # Example: Email service
+│   └── paymentService.js # Example: Payment processing
+├── utils/             # Server-side utilities
+│   ├── database.js    # Database connection utilities
+│   ├── encryption.js  # Encryption/decryption utilities
+│   └── logger.js      # Logging utilities
+└── app.js             # Application entry point
+```
+
+**Database**: PostgreSQL/MySQL for persistent data, Redis for caching
+**Assumptions**: RESTful API design, stateless architecture
+**Known Issues**: Database connection pooling, memory management
+
+## Scripts and Automation
+**Root**: `/scripts/`
+**Purpose**: Build, test, and deployment automation
+
+```
+scripts/
+├── setup.sh           # Initial project setup
+│   # Install dependencies, setup environment
+├── test-suite.sh      # Run all tests
+│   # Unit → Integration → E2E → Security tests
+├── build.sh           # Build for production
+│   # Compile, bundle, optimize assets
+├── deploy.sh          # Deployment script
+│   # Deploy to staging/production
+└── lint.sh            # Code quality checks
+    # ESLint, Prettier, security scans
+```
+
+## Documentation Structure
+**Root**: `/docs/`
+**Purpose**: Comprehensive project documentation
+
+```
+docs/
+├── agents/            # AI agent context documents
+│   ├── project_requirements_doc.md
+│   ├── app_flow_doc.md
+│   ├── tech_stack_doc.md
+│   ├── client_guidelines.md
+│   ├── server_structure_doc.md
+│   ├── implementation_plan.md
+│   ├── file_structure_doc.md
+│   ├── testing_guidelines.md
+│   └── documentation_guidelines.md
+├── code/              # Auto-generated code documentation
+│   ├── client/        # Client-side module docs
+│   ├── server/        # Server-side module docs
+│   └── shared/        # Shared utilities docs
+├── tests/             # Test documentation
+│   ├── unit.md        # Unit test coverage and examples
+│   ├── integration.md # Integration test scenarios
+│   ├── e2e.md         # End-to-end test flows
+│   └── security.md    # Security test results
+└── api/               # API documentation (if applicable)
+    ├── openapi.yaml   # OpenAPI specification
+    └── endpoints.md   # Endpoint documentation
+```
+
+## Configuration and Environment
+**Root Files**: Project configuration and environment setup
+
+- **`.env.example`**: Template for environment variables (API keys, database URLs)
+- **`.gitignore`**: Git ignore patterns for secrets, build artifacts, dependencies
+- **`package.json`**: Dependencies, scripts, and project metadata
+- **`scratchpad.md`**: Current tasks, progress tracking, and agent communication
+- **`README.md`**: Project overview, setup instructions, and AGENTS.md reference
+
+## Interoperability and Data Flow
+**Client ↔ Server**: RESTful API communication, WebSocket for real-time updates
+**Storage Strategy**: Client-side caching with server-side persistence
+**Update Policy**: Incremental updates, conflict resolution, offline support
+**Assumptions**: Modern web standards, HTTPS for security, responsive design
+**Known Issues**: Network latency, offline synchronization, cross-browser compatibility

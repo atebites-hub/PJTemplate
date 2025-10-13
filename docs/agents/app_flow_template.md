@@ -22,6 +22,6 @@ Mermaid Diagram: [e.g., sequenceDiagram; User->>App: Click Launch; App->>User: L
 Mermaid Diagram: [e.g., graph TD; Loop[Render] --> Input[Capture]; Input --> Update[State]; Update --> Loop; Assumptions: [e.g., "Async safe"]; Known Issues: [e.g., "Race conditions"].]
 
 ## [Section: e.g., Data Syncing]
-[Flows for backend interactions, e.g., "On save, client sends to [backend] via [client]... Include verification steps. Assumptions: [e.g., "Assumes API uptime"]; Known Issues: [e.g., "Batch sync delays"].
+[Flows for server interactions, e.g., "On save, client sends to [server] via [client]... Include verification steps. Assumptions: [e.g., "Assumes API uptime"]; Known Issues: [e.g., "Batch sync delays"].
 
-Mermaid Diagram: [e.g., sequenceDiagram; Client->>Backend: Send Data; Backend->>Client: Confirm; Assumptions: [e.g., "Retry logic"]; Known Issues: [e.g., "Network partition"].]
+Mermaid Diagram: [e.g., sequenceDiagram; Client->>Server: Send Data; Server->>Client: Confirm; Assumptions: [e.g., "Retry logic"]; Known Issues: [e.g., "Network partition"].]

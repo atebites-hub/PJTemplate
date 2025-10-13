@@ -27,8 +27,8 @@ PJTemplate/
 │   │   ├── project_requirements_doc.md    # Project objectives and features
 │   │   ├── app_flow_doc.md        # User flows and state transitions
 │   │   ├── tech_stack_doc.md      # Technology choices and APIs
-│   │   ├── frontend_guidelines.md # UI/UX standards and components
-│   │   ├── backend_structure_doc.md       # Architecture and security
+│   │   ├── client_guidelines.md # UI/UX standards and components
+│   │   ├── server_structure_doc.md        # Architecture and security
 │   │   ├── implementation_plan.md # Sprint roadmap with TCREI tasks
 │   │   ├── file_structure_doc.md  # File organization standards
 │   │   ├── testing_guidelines.md  # Test types and validation
@@ -36,8 +36,8 @@ PJTemplate/
 │   ├── code/             # Auto-generated code documentation
 │   └── tests/            # Test documentation and results
 ├── source/               # Main application code
-│   ├── backend/         # Backend implementation
-│   └── client/          # Frontend/client code
+│   ├── server/          # Server implementation
+│   └── client/          # Client code
 ├── tests/               # Test suites
 │   ├── unit/           # Unit tests
 │   ├── integration/    # Integration tests
@@ -116,14 +116,14 @@ pip install -r requirements.txt  # for Python projects
 ## 🔧 Customization Guide
 
 ### Adapting for Your Project Type
-- **Web Applications**: Emphasize frontend_guidelines.md and app_flow_doc.md
-- **APIs/Microservices**: Focus on backend_structure_doc.md and tech_stack_doc.md
+- **Web Applications**: Emphasize client_guidelines.md and app_flow_doc.md
+- **APIs/Microservices**: Focus on server_structure_doc.md and tech_stack_doc.md
 - **Games/Interactive Apps**: Prioritize app_flow_doc.md and user experience flows
 - **Data/ML Projects**: Enhance with ML-specific testing and validation guidelines
 
 ### Technology Stack Integration
 The template is technology-agnostic but includes examples for:
-- **Frontend**: React, Vue, Svelte, vanilla JavaScript
+- **Client**: React, Vue, Svelte, vanilla JavaScript
 - **Backend**: Node.js, Python, Rust, Go
 - **Mobile**: React Native, Flutter, native iOS/Android
 - **Database**: PostgreSQL, MongoDB, Redis

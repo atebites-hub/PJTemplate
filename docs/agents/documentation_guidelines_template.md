@@ -1,48 +1,79 @@
 # Documentation Guidelines Template
 
-This document details how to maintain and use documentation for [Project Name], ensuring cohesion as the project scales. Docs live in `/docs/`, updated alongside code changes. Agents must follow these rules: Reference context-boundary docs (e.g., Tech Stack) strictly; create/update docs for new code/tests; only edit with explicit user instruction. Use this as the single source for format/policy.
+This document defines documentation practices for [Project Name], ensuring code maintainability and AI agent comprehension. Documentation serves as the living knowledge base for the project.
 
 ## Guidelines for Filling Out This Template
 - Replace [Project Name] with your project's name.
-- Customize structure to your tech (e.g., for Python: add Sphinx for auto-docs; for JS: JSDoc).
-- Adapt docstrings to language (e.g., Python: Google/Numpy style; Rust: rustdoc).
-- Tailor .md files to modules (e.g., for blockchain: add `contracts.md` with Anchor examples).
-- Add sprint policy examples specific to your plan (e.g., "Update after Sprint 4").
+- Choose documentation tools that integrate with your development environment (JSDoc, Sphinx, rustdoc).
+- Set up automated documentation generation where possible.
+- Establish documentation review processes and quality metrics.
 - Reference repo structure: Store this in /docs/agents/documentation_guidelines.md; link to /file_structure.md for doc locations in /docs/.
 
-## Repo Documentation Structure
-- **/docs/agents/**: Agent resources (guidelines, context boundaries).
-  - Files: project_requirements_doc.md, app_flow_doc.md, tech_stack_doc.md, frontend_guidelines.md, backend_structure_doc.md, implementation_plan.md, file_structure_doc.md, testing_guidelines.md, this file.
-- **/docs/code/**: Per-module .md files with Mermaid diagrams + details.
-  - Example: `renderer.md`—Mermaid ER diagram of modules, description of how it works, function breakdowns (name, location, params, returns).
-- **/docs/tests/**: Test docs (what/how to test).
-  - Files: unit.md, security.md, integration.md—describe test scope, run commands, edge cases.
+## Documentation Structure
+- **/docs/agents/**: Context boundary documents (AI agent knowledge base)
+  - Files: project_requirements_doc.md, app_flow_doc.md, tech_stack_doc.md, client_guidelines.md, server_structure_doc.md, implementation_plan.md, file_structure_doc.md, testing_guidelines.md, this file.
+- **/docs/code/**: Per-module documentation with Mermaid diagrams and API references
+  - Integration with [tool: JSDoc/Sphinx/rustdoc] for automated generation
+- **/docs/tests/**: Test documentation and coverage reports
+  - Files: unit.md, security.md, integration.md, performance.md
+- **/docs/api/**: API documentation (if applicable)
+  - OpenAPI/Swagger specs, endpoint documentation
 
-## Format and Policy
-- **Docstrings for All Functions**: Include in code files ([language: e.g., JS/Rust/Python]).
-  - Description: What the function does.
-  - Preconditions: Input assumptions.
-  - Postconditions: Expected output/state.
-  - Parameters: List with types/descriptions.
-  - Returns: Type and description.
-  - Example ([language: e.g., JS]):
-    ```
-    /**
-     * Draws a sprite on the canvas.
-     * Preconditions: Sprite image loaded, valid position.
-     * Postconditions: Canvas updated with sprite.
-     * @param {Image} sprite - The sprite image.
-     * @param {number} x - X position.
-     * @param {number} y - Y position.
-     * @returns {void}
-     */
-    function drawSprite(sprite, x, y) { ... }
-    ```
-- **.md Files in /docs/code and /docs/tests**:
-  - Start with Mermaid diagram (e.g., sequence for function flow).
-  - Brief description of module.
-  - Reference functions/classes by name/location, with docstring excerpts.
-  - Update: New code → new .md; edits → update .md; deletions → remove .md.
-- **Sprint Policy**: End each sprint with doc updates (e.g., add `battle_system.md` after Sprint 4).
+## Code Documentation Standards
 
-Agents: Always update docs with code changes. Reference Implementation Plan for sprint alignment.
+### Docstring Format
+Use language-specific standards that integrate with documentation tools:
+
+**JavaScript/TypeScript (JSDoc)**:
+```javascript
+/**
+ * [Brief description of function purpose]
+ * @param {type} param - Parameter description
+ * @returns {type} Return value description
+ * @throws {ErrorType} When error occurs
+ * @example
+ * const result = functionName(input);
+ */
+function functionName(param) {
+  // Implementation
+}
+```
+
+**Python (Google Style)**:
+```python
+def function_name(param: type) -> return_type:
+    """[Brief description of function purpose]
+    
+    Args:
+        param: Parameter description
+        
+    Returns:
+        Return value description
+        
+    Raises:
+        ErrorType: When error occurs
+        
+    Example:
+        >>> result = function_name(input)
+    """
+    # Implementation
+```
+
+### Automated Generation Setup
+- **JavaScript**: `npm install --save-dev jsdoc`
+- **Python**: `pip install sphinx sphinx-autodoc-typehints`
+- **Rust**: Built-in with `cargo doc`
+
+### Module Documentation Template
+Each `/docs/code/[module].md` should include:
+- Overview and purpose
+- Mermaid architecture diagram
+- API reference table
+- Usage examples
+- Dependencies and testing info
+
+### Quality Gates
+- **Coverage**: [X]% of public functions documented
+- **Freshness**: Documentation updated within [timeframe] of code changes
+- **Accuracy**: No broken links or outdated examples
+- **Completeness**: All modules have corresponding documentation files

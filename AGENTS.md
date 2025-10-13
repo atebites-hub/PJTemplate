@@ -11,8 +11,8 @@ The following [Number] documents in `/docs/agents/` define your context boundary
 1. **[Project Requirements Doc.md](mdc:docs/agents/Project Requirements Doc.md)** - Defines general requirements, high-level objectives, user flows, tech stack, and core features.
 2. **[App Flow Doc.md](mdc:docs/agents/App Flow Doc.md)** - Describes user flows, data flows, and state transitions.
 3. **[Tech Stack Doc.md](mdc:docs/agents/Tech Stack Doc.md)** - Describes technologies, dependencies, and APIs to be used.
-4. **[Frontend Guidelines.md](mdc:docs/agents/Frontend Guidelines.md)** - Describes frontend styles, standards, and UI components.
-5. **[Backend Structure Doc.md](mdc:docs/agents/Backend Structure Doc.md)** - Defines backend architecture, security, and data management.
+4. **[Client Guidelines.md](mdc:docs/agents/Client Guidelines.md)** - Describes client styles, standards, and UI components.
+5. **[Server Structure Doc.md](mdc:docs/agents/Server Structure Doc.md)** - Defines server architecture, security, and data management.
 6. **[Implementation Plan.md](mdc:docs/agents/Implementation Plan.md)** - Provides breakdown into actionable sprints with TCREI task structure.
 7. **[File Structure Doc.md](mdc:docs/agents/File Structure Doc.md)** - Defines how files should be organized in the project.
 8. **[Testing Guidelines.md](mdc:docs/agents/Testing Guidelines.md)** - Describes test types, setup, and sprint-end checks.
@@ -21,9 +21,11 @@ The following [Number] documents in `/docs/agents/` define your context boundary
 ## Guidelines for Filling Out This Template
 - Replace [Project Name] with your project's name (e.g., "My API Service" or "Game App").
 - Set [Number] to the count of core docs (default 9; adjust if needed).
-- Customize consultation/quality gates for your domain (e.g., add "API rate limits" for backend-heavy projects).
+- Customize consultation/quality gates for your domain (e.g., add "API rate limits" for server-heavy projects).
 - For multi-agent use: Ensure links work across tools (e.g., mdc: for Markdown previews); test in Cursor/Claude.
 - Reference repo structure: Store this as root/AGENTS.md; link to /file_structure.md for agent file impacts.
+- When transforming this template repository into the user's desired repository, first consult with the user in detail their project requirements.
+- For each template file being updated, iterate in detail with the user over each section, ensuring that the document matches the user's preferences.
 
 ## Development Workflow Requirements
 
@@ -52,7 +54,7 @@ The following [Number] documents in `/docs/agents/` define your context boundary
 
 1. **Working Outside Scope**: Any work not explicitly covered in the [Number] reference documents.
 2. **Technology Changes**: Introducing new technologies or libraries.
-3. **Architecture Modifications**: Changing backend structure or file organization.
+3. **Architecture Modifications**: Changing server structure or file organization.
 4. **Sprint Deviations**: Working on tasks outside current sprint in Implementation Plan.md.
 5. **Security Exceptions**: Any deviation from security requirements.
 6. **Feature Additions**: Adding features not listed in requirements.
