@@ -34,5 +34,6 @@ __pycache__/
 # General
 *.tmp
 *.bak
-
+.cursor/
+.cursor/*
 Assumptions: Customize for your stack (e.g., add Python venv). Known Issues: May need repo-specific ignores (e.g., Solana keys).

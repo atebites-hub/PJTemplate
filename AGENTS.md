@@ -10,30 +10,22 @@
 - For each template file being updated, iterate in detail with the user over each section, ensuring that the document matches the user's preferences.
 
 ## Memory System
+This is a mandatory worklow executed when trigger conditions are met as follows:
+   - Planning
+   - Codebase or Web Search
+   - Task Start
+   - User Response
+   - Todo List Completion
+Every task an agent performs must be created and maintained as a `memory` within the `Memory System`. Every task must be a sprint task from `docs/agents/Implementation Plan.md`. See `docs/memory_template.md` for the template to fill when creating a new `memory`. See `Memory System Bindings` for tool bindings to conduct the workflow.
 
-This project uses a memory-aware architecture to coordinate agents and persist task context. Each task lives as a single memory item that is updated over time.
-Reference template for new tasks in memories: `docs/memory_template.md`.
 Workflow:
-1. At task start:
-   - Look up the task in memory by ID/name. If it exists, open it and resume using its current contents.
-   - If it does not exist, read the entry from `/docs/agents/implementation_plan.md`, then create a new task memory using `memory_template.md` as the structure and populate it from the plan.
-   - If the task is not present in the Implementation Plan, consult the user and create a new task memory using `memory_template.md` and proceed.
-   - Run a broad → scoped `codebase_search` to locate relevant modules/patterns.
-2. Retrieval triggers:
-   - Task start: recall domain memories; run broad → scoped `codebase_search` to locate modules/patterns.
-   - On error: search the failing module/pattern; store a new Lesson if the root cause or fix is novel.
-   - On decision: store a Decision with the final choice and rationale.
-   - On completion: mark Status=completed; summarize Lessons; reconcile the agent todo.
-3. Planning & analysis: Capture Background & Motivation, Key Challenges & Analysis, and Feedback & Assistance within the task memory; promote durable insights into Decisions/Lessons memories when appropriate.
-
-Routine summary:
-- Receive task → consult existing task memories → conduct semantic `codebase_search`.
-- If memory found → resume work; else consult Implementation Plan to create a new task memory; if absent from plan → consult user or create the memory and proceed.
-- Update task memory incrementally upon every todo during execution (Status and Lessons: Background & Motivation, Key Challenges & Analysis, Feedback & Assistance, Learnings) and manage progress via the agent todo system.
-- On completion → mark todo completed and record a final Lesson.
-
-`Memory System` tool bindings (maps workflow and routine tasks to native tools):
-- See `## Memory System Bindings` for `Memory System` tool bindings to conduct the `Memory System` workflow.
+1. Retreive the task `memory` or create a new one if no relevant memory exists. 
+2. Depending on the trigger condition, update the task `memory` with the relevant information.
+   - Planning: Update Task, Context, Rules, and Evaluation sections with information from the conversation.
+   - Codebase or Web Search: Update Analysis, Feedback, and Lessons sections with information from the search results.
+   - Task Start: If on main branch, create a new branch, update the task `memory` state to `in_progress` and set the branch and head to the new branch and commit hash.
+   - User Response: Update the following sections within the `memory` with relevant information from the chat: Analysis, Feedback, and Lessons
+   - Todo List Completion: Update the task `memory` state to `completed` and set the pull request to the pull request url.
 
 ## Project Scope Definition
 
