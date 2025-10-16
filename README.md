@@ -9,7 +9,7 @@ Agentic coding represents a paradigm shift in software development where AI agen
 ## 🚀 Key Features
 
 - **🧠 AI-Centric Architecture**: Designed specifically for human-AI collaboration with clear scope boundaries and communication protocols
-- **📋 TCREI Task Framework**: Structured task decomposition (Task, Context, Rules, Examples, Iteration) for reliable execution
+- **📋 TCREI Task Framework**: Structured task decomposition (Task, Context, Rules, Evaluation, Iteration) for reliable execution
 - **📚 Living Documentation**: Mandatory documentation updates ensure project knowledge remains current and accessible
 - **🔒 Quality Gates**: Built-in testing requirements, security scans, and validation protocols
 - **🤝 Memory-Aware Workflow**: Shared memory + semantic code search
@@ -103,7 +103,7 @@ pip install -r requirements.txt  # for Python projects
 ### For AI Agents (Cursor, Claude, etc.)
 1. **Read the Rules**: Always start by reading `AGENTS.md` for project scope and guidelines
 2. **Check Current Status**: Review `/docs/agents/implementation_plan.md` and recent memory records
-3. **Follow TCREI Format**: Structure all tasks using Task-Context-Rules-Examples-Iteration
+3. **Follow TCREI Format**: Structure all tasks using Task-Context-Rules-Evaluation-Iteration
 4. **Update Documentation**: Maintain `/docs/code/` and `/docs/tests/` as you work
 5. **Use Memory + Todos**: Persist Decisions/Lessons and manage tasks via agent todo tools
 

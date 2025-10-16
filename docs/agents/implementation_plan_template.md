@@ -5,7 +5,7 @@ This document provides a sprint-based roadmap for [Project Name], breaking devel
 ## Guidelines for Filling Out This Template
 - Replace [Project Name] with your project's name.
 - Customize sprints to your timeline (e.g., 2 weeks each, 12 total).
-- Use TCREI for tasks (Task, Context, Rules, Examples, Iteration).
+- Use TCREI for tasks (Task, Context, Rules, Evaluation, Iteration).
 - Add dependencies/testing per sprint.
 - For agile: Include goals, duration, human/AI roles; adapt for your team size.
 - Reference repo structure: Store this in /docs/agents/implementation_plan.md; link to /file_structure.md for sprint-related files in /source/.

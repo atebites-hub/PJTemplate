@@ -52,7 +52,7 @@ The following [Number] documents in `/docs/agents/` define your context boundary
 
 1. **Read Current State**: Identify the current sprint and task in `/docs/agents/implementation_plan.md`, then recall relevant memories using the platform’s memory tool (Cursor Memories or MCP Memory).
 2. **Reference Documents**: Consult the [Number] core documents for requirements, flows, and standards.
-3. **Task Structure**: Use TCREI format for all tasks (Task, Context, Rules, Examples, Iteration).
+3. **Task Structure**: Use TCREI format for all tasks (Task, Context, Rules, Evaluation, Iteration).
 4. **Test Coverage**: Achieve 80%+ test coverage for new code; run `/scripts/test-suite.sh` before commits.
 5. **Security Review**: Run security scans (e.g., [tool: cargo-audit for Rust, ESLint-plugin-security for JS]) before completion.
 

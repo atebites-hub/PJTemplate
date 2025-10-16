@@ -6,8 +6,8 @@ Use this template to create a single memory entry per task. Keep entries concise
 - **Task**: [What to do]
 - **Context**: [Reference docs/agents/ + relevant code paths]
 - **Rules**: [Constraints, style, security]
-- **Examples**: [Pointers to patterns/snippets]
-- **Iteration**: [Plan checks, expected refinements]
+- **Evaluation**: [General instructions for creating tests that can evaluate task completion]
+- **Iteration**: [add todos and update the task memory within the `Memory System` to refine code quality after the task is completed.]
 
 ## Status
 - state: pending | in_progress | completed | cancelled
