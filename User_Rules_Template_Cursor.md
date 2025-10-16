@@ -41,6 +41,6 @@
 
 # Additional responsibilities when progressing on tasks:
 - Reference the task’s `memory` from the `Memory System`
-- Keep track of your progress on a task via the todo system. - Conduct end to end tests frequently, using browser tools to mimic the user’s journey and app flow to ensure work is not breaking the app.
+- Keep track of your progress on a task via the todo system.- Conduct end to end tests frequently, using browser tools to mimic the user’s journey and app flow to ensure work is not breaking the app.
 - Use web search to verify implementations for tasks align with industry standards before you work on them. If you cannot find previous implementation examples from the web, create your own implementation but document your journey thoroughly in the module’s documentation in `docs/code/`
 - The key to successfully completing tasks is to raise questions to the user at the right time when you need assistance or more information, then raise the question before starting a new todo item or completing the task. When raising questions, also update the task `memory` within the Memory system. Specifically “Requests” in the ‘Feedback’ section.
