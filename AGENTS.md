@@ -2,7 +2,7 @@
 
 ## Guidelines for Filling Out This Template
 - Replace [Project Name] with your project's name (e.g., "My API Service" or "Game App").
-- Set [Number] to the count of core docs (default 9; adjust if needed).
+- Set [Number] to the count of core docs (default 10; adjust if needed).
 - Customize consultation/quality gates for your domain (e.g., add "API rate limits" for server-heavy projects).
 - For multi-agent use: Ensure links work across tools (e.g., mdc: for Markdown previews); test in Cursor/Claude.
 - Reference repo structure: Store this as root/AGENTS.md; link to /file_structure.md for agent file impacts.
@@ -29,11 +29,11 @@ Workflow:
 
 ## Project Scope Definition
 
-These rules define the limitations and scope for AI agents (e.g., Cursor, Claude, Cline, Kilo) working on [Project Name]. All work must align with the [Number] core documentation files in `/docs/agents/` that serve as the single source of truth for project requirements, architecture, and implementation guidelines. Agents from any tool must reference these rules as the project's global context boundary.
+These rules define the limitations and scope for AI agents (e.g., Cursor, Claude, Cline, Kilo) working on [Project Name]. All work must align with the 10 core documentation files in `/docs/agents/` that serve as the single source of truth for project requirements, architecture, and implementation guidelines. Agents from any tool must reference these rules as the project's global context boundary.
 
 ### Core Reference Documents
 
-The following [Number] documents in `/docs/agents/` define your context boundary and must be referenced for all work:
+The following 10 documents in `/docs/agents/` define your context boundary and must be referenced for all work:
 
 1. **[Project Requirements Doc.md](mdc:docs/agents/Project Requirements Doc.md)** - Defines general requirements, high-level objectives, user flows, tech stack, and core features.
 2. **[App Flow Doc.md](mdc:docs/agents/App Flow Doc.md)** - Describes user flows, data flows, and state transitions.
@@ -44,6 +44,7 @@ The following [Number] documents in `/docs/agents/` define your context boundary
 7. **[File Structure Doc.md](mdc:docs/agents/File Structure Doc.md)** - Defines how files should be organized in the project.
 8. **[Testing Guidelines.md](mdc:docs/agents/Testing Guidelines.md)** - Describes test types, setup, and sprint-end checks.
 9. **[Documentation Guidelines.md](mdc:docs/agents/Documentation Guidelines.md)** - Defines doc formats, policies, and maintenance.
+10. **[Coding Standards.md](mdc:docs/agents/Coding Standards.md)** - Defines coding standards adapted from Power of 10 and Clean Code.
 
 
 ## Development Workflow Requirements
@@ -51,7 +52,7 @@ The following [Number] documents in `/docs/agents/` define your context boundary
 ### Before Starting Any Work
 
 1. **Read Current State**: Identify the current sprint and task in `/docs/agents/implementation_plan.md`, then recall relevant memories using the platform’s memory tool (Cursor Memories or MCP Memory).
-2. **Reference Documents**: Consult the [Number] core documents for requirements, flows, and standards.
+2. **Reference Documents**: Consult the 10 core documents for requirements, flows, and standards.
 3. **Task Structure**: Use TCREI format for all tasks (Task, Context, Rules, Evaluation, Iteration).
 4. **Test Coverage**: Achieve 80%+ test coverage for new code; run `/scripts/test-suite.sh` before commits.
 5. **Security Review**: Run security scans (e.g., [tool: cargo-audit for Rust, ESLint-plugin-security for JS]) before completion.
@@ -72,7 +73,7 @@ The following [Number] documents in `/docs/agents/` define your context boundary
 
 **MANDATORY**: Consult the human user before:
 
-1. **Working Outside Scope**: Any work not explicitly covered in the [Number] reference documents.
+1. **Working Outside Scope**: Any work not explicitly covered in the 10 reference documents.
 2. **Technology Changes**: Introducing new technologies or libraries.
 3. **Architecture Modifications**: Changing server structure or file organization.
 4. **Sprint Deviations**: Working on tasks outside current sprint in Implementation Plan.md.
