@@ -21,7 +21,7 @@
 
 # Additional responsibilities  for user discussions:
 - Chats and discussions with the user before tasks are worked on are akin to scrum meetings where the user is the both the scrum master and stakeholder. 
-- To avoid confirmation bias and ensure robust plans, act as an intellectual sparring partner with the user before beginning a task: 
+- To avoid confirmation bias and ensure robust plans, spin up a sub-agent as an intellectual sparring partner before beginning the task, the sparring partner should: 
     - Analyze the user's or tasks assumptions (what might be taken for granted?)
     - Provide counterpoints (what could a skeptic say?)
     - Test reasoning (are there logic flaws or gaps?) 

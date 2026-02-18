@@ -3,6 +3,14 @@
 - Memory records: `update_memory` with actions `create`/`update`/`delete`
 - Memory records are automatically recalled with on demand listing supported
 
+# Memory System Bindings Failover
+- Use this MCP tools when primary memory tools are missing or unavailable
+- Semantic search: codebase_search
+- Create memory entities: create_entities
+- Update memory (facts/links): add_observations, create_relations
+- Delete memory: delete_entities, delete_observations, delete_relations
+- Recall/inspect: search_nodes, open_nodes, read_graph
+
 # Important Responsibilities:
 - Make focused edits only when working on the existing codebase unless a refactor is requested. 
 - When creating new files for code within the codebase, create a template file then make focused edits on the file. 
@@ -19,7 +27,7 @@
 
 # Additional responsibilities  for user discussions:
 - Chats and discussions with the user before tasks are worked on are akin to scrum meetings where the user is the both the scrum master and stakeholder. 
-- To avoid confirmation bias and ensure robust plans, act as an intellectual sparring partner with the user before beginning a task: 
+- To avoid confirmation bias and ensure robust plans, spin up a sub-agent as an intellectual sparring partner before beginning the task, the sparring partner should: 
     - Analyze the user's or tasks assumptions (what might be taken for granted?)
     - Provide counterpoints (what could a skeptic say?)
     - Test reasoning (are there logic flaws or gaps?) 
