@@ -10,22 +10,10 @@
 - For each template file being updated, iterate in detail with the user over each section, ensuring that the document matches the user's preferences.
 
 ## Memory System
-This is a mandatory worklow executed when trigger conditions are met as follows:
-   - Planning
-   - Codebase or Web Search
-   - Task Start
-   - User Response
-   - Todo List Completion
-Every task an agent performs must be created and maintained as a `memory` within the `Memory System`. Every task must be a sprint task from `docs/agents/Implementation Plan.md`. See `docs/memory_template.md` for the template to fill when creating a new `memory`. See `Memory System Bindings` for tool bindings to conduct the workflow.
 
-Workflow:
-1. Retreive the task `memory` or create a new one if no relevant memory exists. 
-2. Depending on the trigger condition, update the task `memory` with the relevant information.
-   - Planning: Update Task, Context, Rules, and Evaluation sections with information from the conversation.
-   - Codebase or Web Search: Update Analysis, Feedback, and Lessons sections with information from the search results.
-   - Task Start: If on main branch, create a new branch, update the task `memory` state to `in_progress` and set the branch and head to the new branch and commit hash.
-   - User Response: Update the following sections within the `memory` with relevant information from the chat: Analysis, Feedback, and Lessons
-   - Todo List Completion: Update the task `memory` state to `completed` and set the pull request to the pull request url.
+Task memory tracking is handled by the `memory-system` skill. See [.agents/skills/memory-system/SKILL.md](.agents/skills/memory-system/SKILL.md) for workflow and bindings.
+
+**Requirement**: Every task must have a memory entry. Tasks must be sprint tasks from `docs/agents/Implementation Plan.md`.
 
 ## Project Scope Definition
 
@@ -44,7 +32,7 @@ The following 10 documents in `/docs/agents/` define your context boundary and m
 7. **[File Structure Doc.md](mdc:docs/agents/File Structure Doc.md)** - Defines how files should be organized in the project.
 8. **[Testing Guidelines.md](mdc:docs/agents/Testing Guidelines.md)** - Describes test types, setup, and sprint-end checks.
 9. **[Documentation Guidelines.md](mdc:docs/agents/Documentation Guidelines.md)** - Defines doc formats, policies, and maintenance.
-10. **[Coding Standards.md](mdc:docs/agents/coding_standards.md)** - Defines coding standards adapted from Power of 10 and Clean Code.
+10. **[Coding Standards.md](mdc:docs/agents/Coding Standards.md)** - Defines coding standards adapted from Power of 10 and Clean Code.
 
 
 ## Development Workflow Requirements
