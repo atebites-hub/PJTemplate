@@ -153,7 +153,8 @@ docs/
 │   ├── implementation_plan.md
 │   ├── file_structure_doc.md
 │   ├── testing_guidelines.md
-│   └── documentation_guidelines.md
+│   ├── documentation_guidelines.md
+│   └── coding_standards.md
 ├── code/              # Auto-generated code documentation
 │   ├── client/        # Client-side module docs
 │   ├── server/        # Server-side module docs

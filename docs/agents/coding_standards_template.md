@@ -2,6 +2,365 @@
 
 This document defines mandatory coding standards for [Project Name]. It adapts two foundational frameworks into actionable, language-agnostic rules that all source code, scripts, and tests must follow.
 
+Sources:
+- The Power of 10 - Rules for Developing Safety-Critical Code (Holzmann, NASA/JPL): https://web.eecs.umich.edu/~imarkov/10rules.pdf
+- Clean Code summary (Martin): https://gist.github.com/wojteklu/73c6914cc446146b8b533c0988cf8d29
+
+## Guidelines for Filling Out This Template
+- Replace [Project Name] with your project's name.
+- Replace [language/framework] and [tool:*] placeholders with your stack specifics.
+- Tune numeric thresholds (line limits, coverage, complexity budgets) to your team's norms.
+- Add domain-specific constraints in "Repository-Specific Rules."
+- Keep this document focused on code-level behavior. Move process/test/doc details to the dedicated docs linked below.
+- Reference repo structure: Store this in `/docs/agents/coding_standards.md`.
+
+## Document Ownership and Boundaries
+
+To avoid overlap with other core documents:
+- This document owns code-level standards: control flow, function design, naming, error handling, security coding, concurrency coding, and code smells.
+- `documentation_guidelines.md` owns comment, docstring, and documentation maintenance standards.
+- `testing_guidelines.md` owns test strategy, test architecture, and test-code quality standards.
+- `AGENTS.md` owns project-level quality gates, workflow requirements, and consultation boundaries.
+
+If content overlaps, keep the normative rule in one place and cross-reference from others.
+
+## Rule Severity and Exceptions
+
+Use RFC-style severity labels:
+- MUST: Mandatory. Violations block merge.
+- SHOULD: Expected default. Deviations require written rationale.
+- MAY: Optional guidance.
+
+Exception process for MUST/SHOULD deviations:
+1. Document reason and risk in the task/PR.
+2. Add compensating controls (tests, runtime guardrails, monitoring).
+3. Include rollback/remediation plan.
+4. Obtain reviewer approval before merge.
+
+## Scope and Intent
+
+These standards apply to all modules, scripts, and tests in this repository. Goals:
+- Keep control flow simple and predictable
+- Reduce fragile over-configuration
+- Improve readability and testability
+- Prevent regressions in safety-critical or business-critical paths
+
+---
+
+## General Engineering Principles (Clean Code Foundation)
+
+### CS-GEN-01 Follow conventions (MUST)
+Use language and framework conventions unless the team standard explicitly overrides them.
+
+### CS-GEN-02 Keep it simple (MUST)
+Prefer simpler designs over clever abstractions. Eliminate unnecessary complexity before adding new layers.
+
+### CS-GEN-03 Boy Scout rule (SHOULD)
+Leave touched code cleaner than you found it (naming, small refactors, dead code removal).
+
+### CS-GEN-04 Find root cause (MUST)
+Fix the underlying defect, not only the symptom. Include root-cause notes for production-impacting incidents.
+
+---
+
+## Power of 10 Adaptation (Core Reliability Rules)
+
+The original rules target safety-critical C code. These adaptations preserve intent for [language/framework].
+
+### CS-P10-01 Simple control flow (MUST)
+Avoid recursion in runtime-critical paths unless depth is provably bounded. Avoid hidden branching, bare exception handlers, and `goto`-equivalent constructs.
+
+Example:
+```text
+Bad:
+try:
+    run_operation()
+except:
+    pass
+
+Good:
+try:
+    run_operation()
+except NetworkError as err:
+    logger.error("operation failed", {"operation": "run_operation", "error": str(err)})
+    raise
+```
+
+### CS-P10-02 Bounded loops (MUST)
+Each loop must have explicit progress and termination criteria. Polling loops require timeout/backoff or explicit daemon designation with shutdown strategy.
+
+### CS-P10-03 Bounded runtime resources and memory (MUST)
+Do not spawn unbounded threads/processes/connections. Avoid unbounded memory growth in hot paths; pre-size collections when bounds are known and cap queues/buffers.
+
+### CS-P10-04 Small functions (SHOULD)
+Target <= [40-60] lines per function. Split mixed concerns (parse/validate/side effect). Exception: linear orchestration flows may exceed limit with written justification.
+
+### CS-P10-05 Assertions for invariants (MUST)
+Assert domain invariants at boundaries (inputs, outputs, protocol constraints, unit assumptions, id derivation).
+
+### CS-P10-06 Narrow scope (MUST)
+Declare variables and helpers at smallest practical scope. Avoid mutable globals and ambient hidden state.
+
+### CS-P10-07 Check return values and parameters (MUST)
+Validate external responses (status, schema, nullability, units) before use. Validate function/module inputs at boundaries.
+
+Example:
+```text
+Bad:
+response = http_get(url)
+price = response.json()["price"]
+
+Good:
+response = http_get(url, timeout=5)
+if response.status_code != 200:
+    raise UpstreamError("price endpoint failed", {"status": response.status_code, "url": url})
+payload = response.json()
+if "price" not in payload:
+    raise UpstreamError("price missing", {"url": url, "payload_keys": list(payload.keys())})
+price = payload["price"]
+```
+
+### CS-P10-08 Avoid dynamic/meta patterns in critical paths (MUST)
+Do not use `eval`, `exec`, runtime code injection, or deep dynamic config indirection in critical paths.
+
+### CS-P10-09 Limit indirection depth (SHOULD)
+Keep critical execution paths traceable in <= [3] conceptual hops from entry to side effect.
+
+### CS-P10-10 Zero-warning quality gate (MUST)
+Changed files must pass lint/static-analysis/tests with zero new warnings. Treat warnings as errors in CI.
+
+---
+
+## Clean Code Adaptation
+
+### Naming Standards
+
+#### CS-NAM-01 Descriptive and searchable names (MUST)
+Use names that reveal intent and can be found by search.
+
+#### CS-NAM-02 Named constants over magic literals (MUST)
+Replace repeated literals with named constants in a dedicated constants module (e.g., `constants.[ext]`).
+
+#### CS-NAM-03 Explicit module names (MUST)
+Module/file names should reflect behavior (e.g., `auth_service`, `pricing_engine`) rather than generic buckets (`misc`, `helpers2`).
+
+Example:
+```text
+Bad: nfee, cfg2, doStuff()
+Good: native_tx_fee_base, pricing_config, calculate_quote()
+```
+
+### Design and Architecture Rules
+
+#### CS-DES-01 Keep configurable data at high levels (SHOULD)
+Centralize configuration composition near application boundaries. Keep core logic explicit and minimally configurable.
+
+#### CS-DES-02 Prefer polymorphism/strategy over branch explosion (SHOULD)
+When behavior varies by type/state, favor clear strategy objects/interfaces over large switch/if chains.
+
+#### CS-DES-03 Separate concurrency code (MUST)
+Isolate thread/async coordination from business logic. Keep synchronization and cancellation semantics explicit.
+
+#### CS-DES-04 Prevent over-configurability (SHOULD)
+Do not expose every behavior as configuration. Add configuration only when there is a validated use case.
+
+#### CS-DES-05 Use explicit dependency injection (SHOULD)
+Inject collaborators instead of constructing hidden dependencies in deep internals.
+
+#### CS-DES-06 Follow Law of Demeter (SHOULD)
+A module should interact with direct collaborators, not long chains of nested internals.
+
+### Understandability Rules
+
+#### CS-UND-01 Consistency (MUST)
+Apply similar patterns consistently across modules.
+
+#### CS-UND-02 Explanatory variables (SHOULD)
+Use intermediate names to clarify complex expressions and conditions.
+
+#### CS-UND-03 Encapsulate boundary conditions (SHOULD)
+Keep range/edge-case logic in one place instead of scattering checks.
+
+#### CS-UND-04 Value objects over primitives where meaningful (SHOULD)
+Wrap units/identifiers with validation when mistakes are costly.
+
+#### CS-UND-05 Avoid logical dependency (MUST)
+Do not make a method's correctness depend on implicit side effects from unrelated calls.
+
+#### CS-UND-06 Avoid negative conditionals when possible (SHOULD)
+Prefer positive conditions that read naturally.
+
+Example:
+```text
+Bad: if not is_invalid_user:
+Good: if is_valid_user:
+```
+
+### Function and Module Rules
+
+#### CS-FN-01 Single responsibility functions (MUST)
+A function should do one thing. If explanation needs "and", split it.
+
+#### CS-FN-02 Explicit inputs/outputs (MUST)
+Prefer explicit parameters and returns over hidden global/environment reads in hot paths.
+
+#### CS-FN-03 No flag arguments for behavior switching (SHOULD)
+Split boolean-mode functions into named variants.
+
+Example:
+```text
+Bad: send_notification(user, is_urgent=True)
+Good: send_standard_notification(user) / send_urgent_notification(user)
+```
+
+#### CS-FN-04 Cohesive modules (MUST)
+Group related behavior together. A module should have one primary reason to change.
+
+### Error Handling Rules
+
+#### CS-ERR-01 Fail loudly and actionably (MUST)
+Errors must include enough context to debug without stepping through source.
+
+#### CS-ERR-02 Structured context in logs (MUST)
+Log relevant identifiers (`request_id`, `user_id`, `endpoint`, `correlation_id`, key parameters).
+
+#### CS-ERR-03 No silent exception swallowing (MUST)
+Catch-all handlers must log context and either re-raise or apply explicit recovery.
+
+### Source Code Structure Rules
+
+#### CS-STR-01 Vertical density (SHOULD)
+Keep related code close. Declare variables near first use.
+
+#### CS-STR-02 Downward readability (SHOULD)
+Place high-level flow above lower-level details to support top-down reading.
+
+#### CS-STR-03 Line length and formatting (MUST)
+Use project formatter and keep lines within [80-120] chars unless readability clearly improves.
+
+### Objects and Data Structure Rules
+
+#### CS-DATA-01 Hide internals (SHOULD)
+Expose behavior through stable interfaces rather than leaking mutable internals.
+
+#### CS-DATA-02 Avoid hybrid object/data anti-patterns (SHOULD)
+Prefer clear object behavior or clear data containers; avoid half-and-half ambiguity.
+
+#### CS-DATA-03 Keep classes/modules small (SHOULD)
+Limit responsibilities and instance state.
+
+### Security Coding Standards
+
+#### CS-SEC-01 Input validation at trust boundaries (MUST)
+Validate and normalize external inputs before use.
+
+#### CS-SEC-02 Safe output handling (MUST)
+Apply output encoding/escaping appropriate to target context (HTML, SQL, shell, logs).
+
+#### CS-SEC-03 Secrets handling (MUST)
+Never hardcode secrets. Use approved secret stores/env patterns and redact secrets in logs/errors.
+
+#### CS-SEC-04 Avoid unsafe deserialization/execution (MUST)
+Do not deserialize untrusted payloads into executable/object graphs without strict allowlists.
+
+#### CS-SEC-05 Least privilege defaults (SHOULD)
+Grant minimal runtime permissions and credentials needed for each component.
+
+### Concurrency and Async Standards
+
+#### CS-CON-01 Bounded concurrency (MUST)
+Use bounded pools/semaphores. Document max in-flight work and queue limits.
+
+#### CS-CON-02 Shared state minimization (MUST)
+Prefer immutable messages and ownership transfer over shared mutable state.
+
+#### CS-CON-03 Timeouts and cancellation (MUST)
+All network/IPC/async waits must have explicit timeout and cancellation semantics.
+
+#### CS-CON-04 Idempotent retries and backoff (SHOULD)
+Retry only safe operations with jittered backoff and max-attempt limits.
+
+---
+
+## Repository-Specific Rules (Customize for [Project Name])
+
+Use this section for domain-specific standards. Keep each rule testable and auditable.
+
+Recommended categories:
+1. Constants/config policy (where constants live, what belongs in env)
+2. Data contract policy (schema versioning, backward compatibility)
+3. External integration policy (timeouts, retry budgets, circuit breakers)
+4. Secret/key handling policy (single canonical source, rotation expectations)
+5. Refactor compatibility policy (deprecation windows, adapter/shim requirements)
+
+Template:
+- RULE-[ID] [MUST/SHOULD]: [Clear requirement]
+- Rationale: [Why this exists]
+- Verification: [How to validate in CI/review]
+
+---
+
+## Code Smells to Watch For
+
+These patterns signal degrading code quality and should trigger refactoring discussions:
+
+| Smell | Signal | Suggested response |
+|---|---|---|
+| Rigidity | Small change cascades broadly | Refactor at change boundary; reduce coupling |
+| Fragility | Unrelated behavior breaks frequently | Add characterization tests; isolate side effects |
+| Immobility | Reuse is expensive due to dependencies | Extract stable module interfaces |
+| Needless Complexity | Abstractions with no demonstrated consumer | Remove speculative layers |
+| Needless Repetition | Copy-paste divergence | Consolidate shared behavior |
+| Opacity | Hard to explain behavior path | Improve naming, structure, and boundary contracts |
+
+---
+
+## Enforcement and Automation
+
+### Rule-to-Tool Mapping
+
+Map standards to automated checks:
+
+| Area | Example tools | Gate type |
+|---|---|---|
+| Formatting | [tool: Prettier/Black/rustfmt] | Required pre-commit + CI |
+| Lint/style | [tool: ESLint/ruff/pylint/clippy] | Required CI, warnings as errors |
+| Static analysis | [tool: mypy/pyright/Sonar/CodeQL] | Required for critical modules |
+| Security checks | [tool: bandit/npm audit/cargo-audit] | Required CI for changed scope |
+| Complexity checks | [tool: radon/eslint complexity] | Threshold alerts + reviewer sign-off |
+| Test gates | [tool: pytest/jest/cargo test] | Required CI status checks |
+
+### Pull Request Compliance Checklist
+
+Before merge:
+1. All MUST rules satisfied or approved exception documented.
+2. All changed files pass lint/format/static analysis with zero new warnings.
+3. New/changed behavior covered by tests per `testing_guidelines.md`.
+4. Documentation updates completed per `documentation_guidelines.md`.
+5. Domain-specific repository rules verified for touched components.
+
+---
+
+## Verification Checklist
+
+Before marking a task complete:
+1. Run targeted tests for changed modules (see `testing_guidelines.md`).
+2. Run lint/format/static checks for changed files; no new warnings.
+3. Validate security and concurrency requirements for changed boundaries.
+4. Verify no stale references remain in docs/config/dependent modules.
+5. Update task memory with decisions, blockers, and lessons.
+
+Assumptions:
+- Standards apply to all contributors (human and AI).
+- Teams may tailor SHOULD thresholds per project.
+
+Known tradeoffs:
+- Stricter standards improve reliability but can slow early prototyping.
+- Exception paths should stay rare and fully documented.
+# Coding Standards Template
+
+This document defines mandatory coding standards for [Project Name]. It adapts two foundational frameworks into actionable, language-agnostic rules that all source code, scripts, and tests must follow.
+
 **Sources**:
 - The Power of 10 — Rules for Developing Safety-Critical Code (Holzmann, NASA/JPL): https://web.eecs.umich.edu/~imarkov/10rules.pdf
 - Clean Code summary (Martin): https://gist.github.com/wojteklu/73c6914cc446146b8b533c0988cf8d29

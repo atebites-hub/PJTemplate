@@ -44,7 +44,7 @@ The following 10 documents in `/docs/agents/` define your context boundary and m
 7. **[File Structure Doc.md](mdc:docs/agents/File Structure Doc.md)** - Defines how files should be organized in the project.
 8. **[Testing Guidelines.md](mdc:docs/agents/Testing Guidelines.md)** - Describes test types, setup, and sprint-end checks.
 9. **[Documentation Guidelines.md](mdc:docs/agents/Documentation Guidelines.md)** - Defines doc formats, policies, and maintenance.
-10. **[Coding Standards.md](mdc:docs/agents/Coding Standards.md)** - Defines coding standards adapted from Power of 10 and Clean Code.
+10. **[Coding Standards.md](mdc:docs/agents/coding_standards.md)** - Defines coding standards adapted from Power of 10 and Clean Code.
 
 
 ## Development Workflow Requirements
