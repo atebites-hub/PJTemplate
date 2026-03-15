@@ -15,6 +15,12 @@ Task memory tracking is handled by the `memory-system` skill. See [.agents/skill
 
 **Requirement**: Every task must have a memory entry. Tasks must be sprint tasks from `docs/agents/Implementation Plan.md`.
 
+## Reasoning System
+
+Deep reasoning for code quality is handled by the `reason-code` skill. See [.agents/skills/reason-code/SKILL.md](.agents/skills/reason-code/SKILL.md) for workflow and bindings.
+
+**Requirement**: Use sequential thinking before implementing features, refactoring, or making architectural decisions. Invoke after planning but before editing code.
+
 ## Project Scope Definition
 
 These rules define the limitations and scope for AI agents (e.g., Cursor, Claude, Cline, Kilo) working on [Project Name]. All work must align with the 10 core documentation files in `/docs/agents/` that serve as the single source of truth for project requirements, architecture, and implementation guidelines. Agents from any tool must reference these rules as the project's global context boundary.
