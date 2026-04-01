@@ -12,7 +12,7 @@ from pydantic_settings import (
     TomlConfigSettingsSource,
 )
 from tomlkit import document, dumps, parse, table
-
+from pydantic import BaseModel
 
 # ------------------------------------------------------------------------------
 # Paths
@@ -21,7 +21,7 @@ from tomlkit import document, dumps, parse, table
 # Assumes this file lives at: src/yourapp/core/config.py
 REPO_ROOT = Path(__file__).resolve().parents[3]
 CONFIG_DIR = REPO_ROOT / "config"
-APP_CONFIG_PATH = CONFIG_DIR / "app.toml"
+APP_CONFIG_PATH = CONFIG_DIR / "defaults.toml"
 
 # Dev-first, container-second. If both exist, the later one in the list wins.
 LOCAL_SECRETS_DIR = CONFIG_DIR / "secrets"
@@ -239,3 +239,19 @@ def save_settings(
         doc[section_name] = section_table
 
     path.write_text(dumps(doc), encoding="utf-8")
+
+# ------------------------------------------------------------------------------
+# Prometheus Metrics
+# ------------------------------------------------------------------------------
+
+class MetricsConfig(BaseModel):
+    path: str = "/metrics"
+    namespace: str = "yourapp"
+    subsystem: str = "api"
+    process_metrics_enabled: bool = True
+
+class TracingConfig(BaseModel):
+    exporter: str = "otlp"
+    protocol: str = "grpc"
+    insecure: bool = True
+    timeout_ms: int = 5000
