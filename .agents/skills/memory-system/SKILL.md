@@ -1,72 +1,40 @@
 ---
 name: memory-system
-description: Manage task memories using TCREI framework for tracking progress, decisions, and lessons. Use when planning tasks, starting work, conducting searches, receiving user feedback, or completing todos. Triggers on task lifecycle events.
+description: Read and write task memories in docs/memories/. Use when planning, starting work, after searches or user feedback, and when completing tasks.
 ---
 
 # Memory System
 
-Track every task with structured memories for continuity, accountability, and learning.
+Project task memories live in **`docs/memories/`** as Markdown files. This is separate from any host-level memory your agent may use; follow this skill when this repo requires task memory.
 
-## Trigger Conditions
+## When to use
 
-Execute this workflow when:
-- **Planning**: Breaking down a new task
-- **Search**: After codebase or web search
-- **Task Start**: Beginning implementation
-- **User Response**: Receiving feedback or clarifications
-- **Completion**: Finishing a todo list or task
+- **Before a task**: Create or open the task’s memory file; fill it from the template; set status to `in_progress`.
+- **During work**: After searches or user input, update the same file (analysis, feedback, lessons as appropriate).
+- **After a task**: Update that file—status, timestamps, lessons—then align `docs/agents/implementation_plan.md` per project rules.
 
-## Workflow
+## Recall (scan then read)
 
-### Step 1: Retrieve or Create Memory
+Survey all memories cheaply (everything through **Related Memories**, before **Task (TCREI)** or **Status**):
 
-Check for existing task memory. If none exists, create one using the template in [assets/memory_template.md](assets/memory_template.md).
+```bash
+for f in docs/memories/*.md; do
+  echo "=== $f ==="
+  awk '/^## Task \(TCREI\)|^## Status/{exit} {print}' "$f"
+  echo
+done
+```
 
-### Step 2: Update Based on Trigger
+Pick the most relevant paths from context (current sprint task, links in **Related Memories**, descriptions). **Read the full file** only for those.
 
-| Trigger | Sections to Update |
-|---------|-------------------|
-| Planning | Task, Context, Rules, Evaluation |
-| Search | Analysis, Feedback, Lessons |
-| Task Start | Status → `in_progress`, branch info, commit hash |
-| User Response | Analysis, Feedback, Lessons |
-| Completion | Status → `completed`, PR URL |
+## Write
 
-### Step 3: Persist Changes
+1. **Naming**: `YYYY-MM-DD-<short-task-slug>.md` (kebab-case slug).
+2. **Template**: Copy [assets/memory_template.md](assets/memory_template.md). Task structure and fields are defined there—do not duplicate that spec in other repo docs.
+3. **Before starting**: New file from template; complete **Description**, **Related Memories**, **Task (TCREI)**, **Status** (`in_progress`, timestamps).
+4. **After finishing**: Same file; set **Status** (`completed` / `cancelled`), **Lessons** / **Learnings**, final timestamps.
 
-Use MCP Docker tools to persist memory updates.
+## Requirements
 
-## TCREI Framework
-
-Structure every task memory with:
-
-- **T (Task)**: Step-by-step process with clear todo list
-- **C (Context)**: Reference `docs/` folder for background and constraints
-- **R (Rules)**: Project standards from `docs/agents/` folder
-- **E (Evaluation)**: Instructions for test creation (unit/integration/e2e)
-- **I (Iteration)**: Plan for refinement after completion
-
-## Memory Bindings
-
-Use MCP Docker knowledge graph tools:
-
-| Operation | Tool |
-|-----------|------|
-| Create entities | `create_entities` |
-| Update entities | `add_observations`, `create_relations` |
-| Delete entities | `delete_entities`, `delete_observations`, `delete_relations` |
-| Search/Inspect | `search_nodes`, `open_nodes`, `read_graph` |
-
-## Task Requirements
-
-Every task must:
-1. Be a sprint task from `docs/agents/Implementation Plan.md`
-2. Have a corresponding memory entry
-3. Track state: `pending` | `in_progress` | `completed` | `cancelled`
-
-## Best Practices
-
-- **Concise entries**: Link to code/docs instead of duplicating
-- **Intellectual sparring**: Include assumptions, counterpoints, alternatives
-- **Lesson capture**: Document reusable insights and corrections
-- **Branch tracking**: On task start, if on main branch, create feature branch and record in memory
+- Every sprint task from `docs/agents/Implementation Plan.md` has a matching file under `docs/memories/`.
+- Prefer links to code/docs over long pasted content.

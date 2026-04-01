@@ -2,6 +2,12 @@
 
 Use this template to create a single memory entry per task. Keep entries concise; prefer links back to code/docs when detail is long.
 
+## Description
+[Description of the task or lessons in point form]
+
+## Related Memories
+[List of related memories in point form]
+
 ## Task (TCREI)
 - **Task**: [What to do]
 - **Context**: [Reference docs/agents/ + relevant code paths]

@@ -1,8 +1,13 @@
 # Dependencies
 node_modules/
 *.log
-.DS_Store
 .env
+logs/current/*
+!logs/current/.gitkeep
+logs/archive/*
+!logs/archive/.gitkeep
+config/secrets/*
+!config/secrets/README.md
 
 # Builds
 dist/
@@ -13,19 +18,11 @@ build/
 coverage/
 .nyc_output/
 
-# IDEs
-.idea/
-*.swp
-
 # OS
 Thumbs.db
 .DS_Store
 
-# Rust (if used)
-target/
-Cargo.lock
-
-# Python (if used)
+# Python
 __pycache__/
 *.pyc
 .venv/
@@ -33,4 +30,3 @@ __pycache__/
 # General
 *.tmp
 *.bak
-Assumptions: Customize for your stack (e.g., add Python venv). Known Issues: May need repo-specific ignores (e.g., Solana keys).

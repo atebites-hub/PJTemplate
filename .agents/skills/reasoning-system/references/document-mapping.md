@@ -2,6 +2,10 @@
 
 Task-type to core document mapping for `/docs/agents/`.
 
+## Retrieval planning (reasoning-system thought 2)
+
+After you pick a task type below, spell out a **retrieval plan**: which of the numbered documents to open, which **task memory** entries to recall (see the memory-system skill), and which **codebase** paths, symbols, or search queries you need before design (thought 3). Step 1 in the reasoning-system skill gives candidates; thought 2 makes the list actionable.
+
 ## The 10 Core Documents
 
 | # | Document | Purpose |
@@ -87,5 +91,5 @@ When reasoning about changes, consider these common dependencies:
 |-----------------|---------------|
 | `App Flow Doc.md` | `Project Requirements Doc.md`, `Client Guidelines.md` |
 | `Server Structure Doc.md` | `Tech Stack Doc.md`, `File Structure Doc.md` |
-| `coding_standards.md` | `Testing Guidelines.md`, `Documentation Guidelines.md` |
+| `Coding Standards.md` | `Testing Guidelines.md`, `Documentation Guidelines.md` |
 | `Implementation Plan.md` | All documents for sprint alignment |
