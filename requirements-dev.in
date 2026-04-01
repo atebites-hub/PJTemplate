@@ -1,0 +1,13 @@
+-r requirements.in
+
+build
+hatchling
+ruff
+basedpyright
+pytest
+mkdocs
+mkdocstrings[python]
+interrogate
+pip-tools
+pip-audit
+bandit
