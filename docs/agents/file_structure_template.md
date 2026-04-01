@@ -21,7 +21,7 @@ root/
 ├── .env.example               # Environment variables template
 ├── .gitignore                 # Git ignore patterns
 ├── package.json               # Dependencies and scripts (if applicable)
-├── source/                    # Main application code
+├── src/                    # Main application code
 │   ├── client/               # Client-side code
 │   │   ├── components/       # Reusable UI components
 │   │   ├── pages/           # Page components/routes

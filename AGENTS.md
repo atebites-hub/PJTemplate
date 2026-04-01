@@ -21,12 +21,6 @@ Deep reasoning for code quality is handled by the `reason-code` skill. See [.age
 
 **Requirement**: Use sequential thinking before implementing features, refactoring, or making architectural decisions. Invoke after planning but before editing code.
 
-## REPL Context Explorer
-
-Persistent stateful Python REPL for recursive, programmatic codebase exploration is handled by the `repl-context-explorer` skill. See [.agents/skills/repl-context-explorer/SKILL.md](.agents/skills/repl-context-explorer/SKILL.md) for workflow and bindings.
-
-**Requirement**: Bootstrap this skill at the **start of every chat session** before any other work begins. It activates a persistent Python workspace (via `MCP_DOCKER` -> `execute_code`) that compounds understanding across the entire conversation. Use it throughout the session to load files, run analysis, and persist intermediate results — do not re-read files or re-explain context already loaded into the REPL.
-
 ## Project Scope Definition
 
 These rules define the limitations and scope for AI agents (e.g., Cursor, Claude, Cline, Kilo) working on [Project Name]. All work must align with the 10 core documentation files in `/docs/agents/` that serve as the single source of truth for project requirements, architecture, and implementation guidelines. Agents from any tool must reference these rules as the project's global context boundary.
@@ -40,7 +34,7 @@ The following 10 documents in `/docs/agents/` define your context boundary and m
 3. **[Tech Stack Doc.md](mdc:docs/agents/Tech Stack Doc.md)** - Describes technologies, dependencies, and APIs to be used.
 4. **[Client Guidelines.md](mdc:docs/agents/Client Guidelines.md)** - Describes client styles, standards, and UI components.
 5. **[Server Structure Doc.md](mdc:docs/agents/Server Structure Doc.md)** - Defines server architecture, security, and data management.
-6. **[Implementation Plan.md](mdc:docs/agents/Implementation Plan.md)** - Provides breakdown into actionable sprints with TCREI task structure.
+6. **[Implementation Plan.md](mdc:docs/agents/Implementation Plan.md)** - Provides breakdown into actionable sprints.
 7. **[File Structure Doc.md](mdc:docs/agents/File Structure Doc.md)** - Defines how files should be organized in the project.
 8. **[Testing Guidelines.md](mdc:docs/agents/Testing Guidelines.md)** - Describes test types, setup, and sprint-end checks.
 9. **[Documentation Guidelines.md](mdc:docs/agents/Documentation Guidelines.md)** - Defines doc formats, policies, and maintenance.
@@ -51,12 +45,11 @@ The following 10 documents in `/docs/agents/` define your context boundary and m
 
 ### Before Starting Any Work
 
-1. **Bootstrap REPL**: Run the `repl-context-explorer` skill bootstrap immediately — call `execute_code` (MCP_DOCKER) with the full contents of `.agents/skills/repl-context-explorer/scripts/bootstrap.py`, store the returned `session_id` integer, run the dirty check (`get_status()`), and reset if the repo signature does not match. This activates the persistent Python workspace for the entire session. See [.agents/skills/repl-context-explorer/SKILL.md](.agents/skills/repl-context-explorer/SKILL.md).
-2. **Read Current State**: Identify the current sprint and task in `/docs/agents/implementation_plan.md`, then recall relevant memories using the platform's memory tool (Cursor Memories or MCP Memory).
-3. **Reference Documents**: Consult the 10 core documents for requirements, flows, and standards.
-4. **Task Structure**: Use TCREI format for all tasks (Task, Context, Rules, Evaluation, Iteration).
-5. **Test Coverage**: Achieve 80%+ test coverage for new code; run `/scripts/test-suite.sh` before commits.
-6. **Security Review**: Run security scans (e.g., [tool: cargo-audit for Rust, ESLint-plugin-security for JS]) before completion.
+1. **Read Current State**: Identify the current sprint and task in `/docs/agents/implementation_plan.md`, then recall relevant memories using the platform's memory tool (Cursor Memories or MCP Memory).
+2. **Reference Documents**: Consult the 10 core documents for requirements, flows, and standards.
+3. **Task Structure**: Use TCREI format for all tasks (Task, Context, Rules, Evaluation, Iteration).
+4. **Test Coverage**: Achieve 80%+ test coverage for new code; run `/scripts/test-suite.sh` before commits.
+5. **Security Review**: Run security scans (e.g., [tool: cargo-audit for Rust, ESLint-plugin-security for JS]) before completion.
 
 
 ### Documentation Requirements
