@@ -1,0 +1,94 @@
+[build-system]
+requires = ["hatchling>=1.26"]
+build-backend = "hatchling.build"
+
+[project]
+name = "yourapp"
+version = "0.1.0"
+description = "High-performance FastAPI service with a worker pipeline"
+readme = "README.md"
+requires-python = ">=3.12"
+authors = [{ name = "Your Name" }]
+license = { text = "Proprietary" }
+
+dependencies = [
+  "fastapi",
+  "uvicorn[standard]",
+  "pydantic",
+  "pydantic-settings",
+  "tomlkit",
+  "prometheus-client",
+  "opentelemetry-api",
+  "opentelemetry-sdk",
+  "opentelemetry-exporter-otlp-proto-grpc",
+  "opentelemetry-instrumentation-fastapi",
+  "opentelemetry-instrumentation-logging",
+]
+
+[project.optional-dependencies]
+dev = [
+  "bandit",
+  "basedpyright",
+  "build",
+  "interrogate",
+  "mkdocs",
+  "mkdocstrings[python]",
+  "pip-audit",
+  "pip-tools",
+  "pytest",
+  "ruff",
+]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/yourapp"]
+
+[tool.hatch.build.targets.sdist]
+exclude = [
+  "/.devcontainer",
+  "/.github",
+  "/.vscode",
+  "/config/secrets",
+  "/logs",
+]
+
+[tool.ruff]
+target-version = "py312"
+line-length = 100
+src = ["src", "tests"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP", "D"]
+ignore = ["D203", "D213"]
+
+[tool.ruff.lint.per-file-ignores]
+"src/**/__init__.py" = ["F401"]
+"tests/**/*.py" = ["D"]
+
+[tool.ruff.format]
+quote-style = "double"
+
+[tool.basedpyright]
+include = ["src", "tests"]
+typeCheckingMode = "recommended"
+pythonVersion = "3.12"
+reportMissingTypeStubs = false
+
+[tool.interrogate]
+fail-under = 90
+style = "google"
+exclude = ["build", "dist", "docs", ".venv", "logs"]
+
+[tool.pip-tools]
+generate-hashes = true
+allow-unsafe = true
+resolver = "backtracking"
+
+[tool.pytest.ini_options]
+minversion = "8.0"
+addopts = "-ra --strict-markers"
+testpaths = ["tests"]
+markers = [
+  "unit: unit tests",
+  "integration: integration tests",
+  "e2e: end-to-end tests",
+]

@@ -1,0 +1,22 @@
+exclude_dirs:
+  - tests
+  - .venv
+  - build
+  - dist
+  - docs
+  - logs
+  - site
+
+# Keep this strict by default.
+tests: []
+skips: []
+
+# Optional plugin-specific tuning examples:
+#
+# assert_used:
+#   skips:
+#     - "*_test.py"
+#     - "test_*.py"
+#
+# try_except_pass:
+#   check_typed_exception: true

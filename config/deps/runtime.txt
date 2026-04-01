@@ -1,0 +1,4 @@
+# Alias file only.
+# Canonical runtime lockfile: repo/requirements.txt
+
+-r ../../requirements.txt

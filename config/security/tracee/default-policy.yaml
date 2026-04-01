@@ -1,0 +1,20 @@
+name: baseline-runtime-observability
+description: Starter Tracee policy for suspicious runtime activity.
+scope:
+  - global
+defaultAction: log
+
+rules:
+  - event: dropped_executable
+
+  - event: security_file_open
+    filter:
+      - args.pathname=/run/secrets/*
+
+  - event: sched_process_exec
+    filter:
+      - uid=0
+
+  - event: close
+    filter:
+      - retval!=0

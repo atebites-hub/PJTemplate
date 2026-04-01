@@ -1,0 +1,105 @@
+logging {
+  level  = "info"
+  format = "logfmt"
+}
+
+//
+// Receive OTLP telemetry from your app/workers.
+// We'll use this mainly for traces.
+//
+
+otelcol.receiver.otlp "ingest" {
+  grpc {
+    endpoint = "0.0.0.0:4317"
+  }
+
+  http {
+    endpoint = "0.0.0.0:4318"
+  }
+
+  output {
+    traces = [otelcol.processor.batch.traces.input]
+    # Optional future path if you later emit OTel logs directly:
+    # logs   = [otelcol.processor.batch.logs.input]
+  }
+}
+
+otelcol.processor.batch "traces" {
+  output {
+    traces = [otelcol.exporter.otlp.tempo.input]
+  }
+}
+
+otelcol.exporter.otlp "tempo" {
+  client {
+    endpoint = "tempo:4317"
+
+    tls {
+      insecure = true
+    }
+  }
+}
+
+//
+// Tail structured JSONL app logs and ship them to Loki.
+//
+
+loki.source.file "app_jsonl" {
+  targets = [
+    {
+      __path__     = "/workspace/logs/current/*.jsonl",
+      job          = "yourapp",
+      service_name = "yourapp",
+    },
+  ]
+
+  file_match {
+    enabled     = true
+    sync_period = "10s"
+  }
+
+  forward_to = [loki.process.app_jsonl.receiver]
+}
+
+loki.process "app_jsonl" {
+  stage.json {
+    expressions = {
+      ts       = "ts",
+      level    = "level",
+      logger   = "logger",
+      service  = "service",
+      trace_id = "trace_id",
+      span_id  = "span_id"
+    }
+  }
+
+  stage.labels {
+    values = {
+      level   = "",
+      logger  = "",
+      service = ""
+    }
+  }
+
+  forward_to = [loki.write.default.receiver]
+}
+
+loki.write "default" {
+  endpoint {
+    url = "http://loki:3100/loki/api/v1/push"
+  }
+}
+
+# Optional future OTel-log path:
+#
+# otelcol.processor.batch "logs" {
+#   output {
+#     logs = [otelcol.exporter.otlphttp.loki.input]
+#   }
+# }
+#
+# otelcol.exporter.otlphttp "loki" {
+#   client {
+#     endpoint = "http://loki:3100/otlp"
+#   }
+# }

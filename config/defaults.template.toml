@@ -1,0 +1,33 @@
+[app]
+name = "yourapp"
+env = "development"
+debug = false
+
+[server]
+host = "127.0.0.1"
+port = 8080
+
+[workers]
+max_processes = 8
+spawn_mode = "subprocess"
+request_timeout_ms = 2000
+
+[logging]
+root = "logs"
+current_dir = "logs/current"
+archive_dir = "logs/archive"
+level = "INFO"
+format = "jsonl"
+max_mb = 128
+backup_count = 50
+
+[observability]
+service_name = "yourapp"
+metrics_enabled = true
+tracing_enabled = true
+log_correlation_enabled = true
+otlp_endpoint = "http://alloy:4317"
+sample_ratio = 0.1
+
+[features]
+web_ui_writes_config = true

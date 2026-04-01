@@ -1,0 +1,43 @@
+site_name: yourapp
+site_description: Internal documentation for yourapp
+site_url: http://localhost:8000
+
+docs_dir: ../../docs
+site_dir: ../../site/docs
+
+strict: true
+use_directory_urls: true
+
+theme:
+  name: mkdocs
+
+nav:
+  - Home: index.md
+  - Agents:
+      - Architecture: agents/architecture.md
+      - Workflows: agents/workflows.md
+  - Memory:
+      - Current State: memory/current-state.md
+      - Gotchas: memory/gotchas.md
+
+plugins:
+  - search
+  - mkdocstrings:
+      handlers:
+        python:
+          paths:
+            - ../../src
+          options:
+            docstring_style: google
+            show_source: false
+            show_root_heading: true
+            show_signature_annotations: true
+            separate_signature: true
+            members_order: source
+
+markdown_extensions:
+  - admonition
+  - tables
+  - fenced_code
+  - toc:
+      permalink: true
