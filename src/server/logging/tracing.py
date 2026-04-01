@@ -1,12 +1,13 @@
-# src/yourapp/core/tracing.py
+"""OpenTelemetry tracing setup, FastAPI instrumentation, and propagation helpers."""
 
 from __future__ import annotations
 
 import atexit
 import os
 import re
+from collections.abc import Iterator, Mapping, MutableMapping
 from contextlib import contextmanager
-from typing import Any, Iterator, Mapping, MutableMapping
+from typing import Any
 
 from fastapi import FastAPI
 from opentelemetry import trace
@@ -17,10 +18,9 @@ from opentelemetry.sdk.resources import Resource
 from opentelemetry.sdk.trace import TracerProvider
 from opentelemetry.sdk.trace.export import BatchSpanProcessor
 from opentelemetry.sdk.trace.sampling import ParentBased, TraceIdRatioBased
-from opentelemetry.trace import Span, SpanKind
+from opentelemetry.trace import Span, SpanKind, Tracer
 
 from .config import Settings, get_settings
-
 
 _TRACING_CONFIGURED = False
 _FASTAPI_INSTRUMENTED = False
@@ -67,13 +67,7 @@ def configure_tracing(
     app: FastAPI | None = None,
     settings: Settings | None = None,
 ) -> None:
-    """
-    Configure OpenTelemetry tracing for the current process.
-
-    Call this once per process:
-    - in the FastAPI process
-    - in each worker/subprocess entrypoint
-    """
+    """Configure OpenTelemetry tracing once per process (API or worker)."""
     global _TRACING_CONFIGURED, _TRACER_PROVIDER
 
     if _TRACING_CONFIGURED:
@@ -110,11 +104,7 @@ def instrument_fastapi(
     app: FastAPI,
     settings: Settings | None = None,
 ) -> None:
-    """
-    Auto-instrument FastAPI routes.
-
-    Safe to call multiple times; only instruments once.
-    """
+    """Instrument FastAPI routes; no-op if already instrumented."""
     global _FASTAPI_INSTRUMENTED
 
     if _FASTAPI_INSTRUMENTED:
@@ -131,6 +121,7 @@ def instrument_fastapi(
 
 
 def shutdown_tracing() -> None:
+    """Flush and shut down the global tracer provider if configured."""
     global _TRACING_CONFIGURED, _TRACER_PROVIDER
 
     if _TRACER_PROVIDER is not None:
@@ -140,7 +131,8 @@ def shutdown_tracing() -> None:
     _TRACING_CONFIGURED = False
 
 
-def get_tracer(name: str | None = None):
+def get_tracer(name: str | None = None) -> Tracer:
+    """Return a named tracer, defaulting to the configured service name."""
     settings = get_settings()
     return trace.get_tracer(name or settings.observability.service_name)
 
@@ -154,12 +146,12 @@ def start_span(
     attributes: Mapping[str, Any] | None = None,
     context: Any | None = None,
 ) -> Iterator[Span]:
-    """
-    Start a span as the current span.
+    """Start a span and optionally set attributes on the current context.
 
     Example:
         with start_span("pipeline.embed", attributes={"job_id": job_id}) as span:
             ...
+
     """
     tracer = get_tracer(tracer_name)
 
@@ -170,6 +162,7 @@ def start_span(
 
 
 def set_span_attributes(span: Span, attributes: Mapping[str, Any]) -> None:
+    """Apply key-value attributes to an open span."""
     for key, value in attributes.items():
         span.set_attribute(key, value)
 
@@ -179,6 +172,7 @@ def add_span_event(
     *,
     attributes: Mapping[str, Any] | None = None,
 ) -> None:
+    """Add a named event to the current span, if any."""
     span = trace.get_current_span()
     if span is not None:
         span.add_event(name, attributes=dict(attributes or {}))
@@ -187,8 +181,7 @@ def add_span_event(
 def inject_trace_context(
     carrier: MutableMapping[str, str] | None = None,
 ) -> dict[str, str]:
-    """
-    Inject current trace context into a carrier dict.
+    """Inject current trace context into a carrier dict.
 
     Typical output keys:
       - traceparent
@@ -210,9 +203,7 @@ def inject_trace_context(
 def extract_trace_context(
     carrier: Mapping[str, str] | None,
 ) -> Any:
-    """
-    Extract trace context from a carrier dict and return an OTel context.
-    """
+    """Extract an OpenTelemetry context from a W3C trace carrier mapping."""
     from opentelemetry.trace.propagation.tracecontext import (
         TraceContextTextMapPropagator,
     )
@@ -224,9 +215,7 @@ def extract_trace_context(
 
 
 def make_subprocess_trace_env() -> dict[str, str]:
-    """
-    Convert current trace context into environment variables suitable for a child
-    process.
+    """Serialize the current trace context into environment variables for a child.
 
     Parent:
         env = os.environ.copy()
@@ -255,6 +244,7 @@ def make_subprocess_trace_env() -> dict[str, str]:
 def extract_trace_context_from_env(
     env: Mapping[str, str] | None = None,
 ) -> Any | None:
+    """Rebuild trace context from env vars produced by ``make_subprocess_trace_env``."""
     env = env or os.environ
 
     carrier: dict[str, str] = {}
@@ -279,9 +269,7 @@ def pipeline_stage(
     attributes: Mapping[str, Any] | None = None,
     context: Any | None = None,
 ) -> Iterator[Span]:
-    """
-    Convenience wrapper for your worker pipeline stages.
-    """
+    """Open a span named ``pipeline.<stage>`` with standard pipeline attributes."""
     attrs = {"pipeline.stage": stage}
     if attributes:
         attrs.update(attributes)

@@ -1,10 +1,12 @@
+"""Application configuration loaded from TOML and secret files."""
+
 from __future__ import annotations
 
 from functools import lru_cache
 from pathlib import Path
 from typing import Any
 
-from pydantic import BaseModel, Field, SecretStr, field_validator
+from pydantic import BaseModel, SecretStr, field_validator
 from pydantic_settings import (
     BaseSettings,
     PydanticBaseSettingsSource,
@@ -12,7 +14,6 @@ from pydantic_settings import (
     TomlConfigSettingsSource,
 )
 from tomlkit import document, dumps, parse, table
-from pydantic import BaseModel
 
 # ------------------------------------------------------------------------------
 # Paths
@@ -32,24 +33,33 @@ RUNTIME_SECRETS_DIR = Path("/run/secrets")
 # Nested config models
 # ------------------------------------------------------------------------------
 
+
 class AppConfig(BaseModel):
+    """Identity and runtime mode for the application."""
+
     name: str = "yourapp"
     env: str = "development"
     debug: bool = False
 
 
 class ServerConfig(BaseModel):
+    """HTTP server bind address and port."""
+
     host: str = "127.0.0.1"
     port: int = 8080
 
 
 class WorkersConfig(BaseModel):
+    """Worker process pool limits and timeouts."""
+
     max_processes: int = 8
     spawn_mode: str = "subprocess"
     request_timeout_ms: int = 2_000
 
 
 class LoggingConfig(BaseModel):
+    """Log directory layout, level, and rotation policy."""
+
     root: str = "logs"
     current_dir: str = "logs/current"
     archive_dir: str = "logs/archive"
@@ -61,6 +71,7 @@ class LoggingConfig(BaseModel):
     @field_validator("level")
     @classmethod
     def normalize_level(cls, value: str) -> str:
+        """Return an upper-case level name from the allowed set."""
         value = value.upper()
         allowed = {"DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"}
         if value not in allowed:
@@ -70,6 +81,7 @@ class LoggingConfig(BaseModel):
     @field_validator("format")
     @classmethod
     def validate_format(cls, value: str) -> str:
+        """Require JSONL log format."""
         value = value.lower()
         if value != "jsonl":
             raise ValueError("logging.format must be 'jsonl'")
@@ -77,6 +89,8 @@ class LoggingConfig(BaseModel):
 
 
 class ObservabilityConfig(BaseModel):
+    """Service naming, toggles, and OTLP endpoint for telemetry."""
+
     service_name: str = "yourapp"
     metrics_enabled: bool = True
     tracing_enabled: bool = True
@@ -87,24 +101,45 @@ class ObservabilityConfig(BaseModel):
     @field_validator("sample_ratio")
     @classmethod
     def validate_sample_ratio(cls, value: float) -> float:
+        """Validate that the trace sampling ratio is between 0.0 and 1.0."""
         if not 0.0 <= value <= 1.0:
             raise ValueError("observability.sample_ratio must be between 0.0 and 1.0")
         return value
 
 
 class FeaturesConfig(BaseModel):
+    """Feature flags for optional product behavior."""
+
     web_ui_writes_config: bool = True
+
+
+class MetricsConfig(BaseModel):
+    """Prometheus metrics endpoint and metric naming."""
+
+    path: str = "/metrics"
+    namespace: str = "yourapp"
+    subsystem: str = "api"
+    process_metrics_enabled: bool = True
+
+
+class TracingConfig(BaseModel):
+    """OpenTelemetry OTLP exporter options."""
+
+    exporter: str = "otlp"
+    protocol: str = "grpc"
+    insecure: bool = True
+    timeout_ms: int = 5000
 
 
 # ------------------------------------------------------------------------------
 # Main settings model
 # ------------------------------------------------------------------------------
 
-class Settings(BaseSettings):
-    """
-    Application settings.
 
-    Non-secret values come from config/app.toml.
+class Settings(BaseSettings):
+    """Application settings.
+
+    Non-secret values come from ``config/defaults.toml``.
     Secret values come from mounted secret files.
     Init kwargs are allowed so tests can override settings cleanly.
     """
@@ -113,10 +148,8 @@ class Settings(BaseSettings):
         # Pydantic settings behavior
         extra="ignore",
         validate_default=True,
-
         # TOML source path
         toml_file=str(APP_CONFIG_PATH),
-
         # Mounted secrets
         secrets_dir=[str(LOCAL_SECRETS_DIR), str(RUNTIME_SECRETS_DIR)],
         secrets_dir_missing="ok",
@@ -129,6 +162,8 @@ class Settings(BaseSettings):
     logging: LoggingConfig = LoggingConfig()
     observability: ObservabilityConfig = ObservabilityConfig()
     features: FeaturesConfig = FeaturesConfig()
+    metrics: MetricsConfig = MetricsConfig()
+    tracing: TracingConfig = TracingConfig()
 
     # Top-level secrets: each field maps to one file in the secrets dir
     openai_api_key: SecretStr | None = None
@@ -146,6 +181,7 @@ class Settings(BaseSettings):
         dotenv_settings: PydanticBaseSettingsSource,
         file_secret_settings: PydanticBaseSettingsSource,
     ) -> tuple[PydanticBaseSettingsSource, ...]:
+        """Order settings sources: init kwargs, TOML, then secret files (no env)."""
         # Your chosen standard:
         # 1. explicit init overrides (great for tests)
         # 2. config/app.toml
@@ -173,14 +209,17 @@ class Settings(BaseSettings):
 
     @property
     def log_root_path(self) -> Path:
+        """Absolute path to the log tree root under the repo."""
         return (REPO_ROOT / self.logging.root).resolve()
 
     @property
     def log_current_path(self) -> Path:
+        """Absolute path to the active (hot) JSONL log directory."""
         return (REPO_ROOT / self.logging.current_dir).resolve()
 
     @property
     def log_archive_path(self) -> Path:
+        """Absolute path to rotated log archives."""
         return (REPO_ROOT / self.logging.archive_dir).resolve()
 
 
@@ -188,12 +227,15 @@ class Settings(BaseSettings):
 # Singleton access for FastAPI
 # ------------------------------------------------------------------------------
 
+
 @lru_cache(maxsize=1)
 def get_settings() -> Settings:
+    """Return the process-wide cached ``Settings`` instance."""
     return Settings()
 
 
 def reload_settings() -> Settings:
+    """Clear the settings cache and load a fresh ``Settings`` instance."""
     get_settings.cache_clear()
     return get_settings()
 
@@ -202,7 +244,9 @@ def reload_settings() -> Settings:
 # Filesystem helpers
 # ------------------------------------------------------------------------------
 
+
 def ensure_runtime_dirs(settings: Settings | None = None) -> None:
+    """Create log current and archive directories if they are missing."""
     settings = settings or get_settings()
     settings.log_current_path.mkdir(parents=True, exist_ok=True)
     settings.log_archive_path.mkdir(parents=True, exist_ok=True)
@@ -212,15 +256,15 @@ def ensure_runtime_dirs(settings: Settings | None = None) -> None:
 # TOML write-back helpers
 # ------------------------------------------------------------------------------
 
+
 def save_settings(
     settings: Settings,
     path: Path = APP_CONFIG_PATH,
 ) -> None:
-    """
-    Write non-secret settings back to config/app.toml.
+    """Write non-secret settings back to the TOML config file.
 
-    Uses TOML Kit so formatting/comments are preserved as much as possible.
-    Secrets are never written into app.toml.
+    Uses TOML Kit so formatting and comments are preserved when possible.
+    Secrets are never written to this file.
     """
     path.parent.mkdir(parents=True, exist_ok=True)
 
@@ -239,19 +283,3 @@ def save_settings(
         doc[section_name] = section_table
 
     path.write_text(dumps(doc), encoding="utf-8")
-
-# ------------------------------------------------------------------------------
-# Prometheus Metrics
-# ------------------------------------------------------------------------------
-
-class MetricsConfig(BaseModel):
-    path: str = "/metrics"
-    namespace: str = "yourapp"
-    subsystem: str = "api"
-    process_metrics_enabled: bool = True
-
-class TracingConfig(BaseModel):
-    exporter: str = "otlp"
-    protocol: str = "grpc"
-    insecure: bool = True
-    timeout_ms: int = 5000

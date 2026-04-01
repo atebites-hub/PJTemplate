@@ -1,9 +1,9 @@
-# src/yourapp/core/telemetry.py
+"""Process-wide telemetry setup: logging, metrics, and distributed tracing."""
 
 from __future__ import annotations
 
+from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
-from typing import AsyncIterator
 
 from fastapi import FastAPI
 
@@ -12,7 +12,6 @@ from .logging import configure_logging, shutdown_logging
 from .metrics import setup_metrics
 from .tracing import configure_tracing, shutdown_tracing
 
-
 _TELEMETRY_CONFIGURED = False
 
 
@@ -20,14 +19,10 @@ def setup_telemetry(
     app: FastAPI | None = None,
     settings: Settings | None = None,
 ) -> None:
-    """
-    Initialize telemetry for the current process.
+    """Initialize logging, tracing, and metrics for this process.
 
-    FastAPI process:
-        setup_telemetry(app)
-
-    Worker / subprocess:
-        setup_telemetry()
+    Pass ``app`` in the API process to enable FastAPI metrics; omit it in
+    workers that only need logging and tracing.
     """
     global _TELEMETRY_CONFIGURED
 
@@ -49,9 +44,7 @@ def setup_telemetry(
 
 
 def shutdown_telemetry() -> None:
-    """
-    Clean shutdown for process-local telemetry.
-    """
+    """Shut down tracing and logging for this process."""
     global _TELEMETRY_CONFIGURED
 
     shutdown_tracing()
@@ -62,11 +55,12 @@ def shutdown_telemetry() -> None:
 
 @asynccontextmanager
 async def telemetry_lifespan(app: FastAPI) -> AsyncIterator[None]:
-    """
-    FastAPI lifespan helper.
+    """Yield after startup telemetry; shut down telemetry on app exit.
 
     Usage:
+
         app = FastAPI(lifespan=telemetry_lifespan)
+
     """
     setup_telemetry(app=app)
     try:

@@ -1,3 +1,5 @@
+"""FastAPI ASGI application factory and ``app`` instance."""
+
 from fastapi import FastAPI
 
 from .logging.telemetry import telemetry_lifespan

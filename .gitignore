@@ -17,6 +17,7 @@ build/
 # Tests
 coverage/
 .nyc_output/
+.ruff_cache/
 
 # OS
 Thumbs.db

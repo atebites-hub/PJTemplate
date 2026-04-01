@@ -1,3 +1,5 @@
+"""JSONL logging, rotation, and OpenTelemetry trace correlation filters."""
+
 from __future__ import annotations
 
 import atexit
@@ -5,13 +7,12 @@ import json
 import logging
 import os
 import queue
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from logging.handlers import QueueHandler, QueueListener, RotatingFileHandler
 from pathlib import Path
 from typing import Any
 
 from .config import Settings, ensure_runtime_dirs, get_settings
-
 
 # ------------------------------------------------------------------------------
 # Globals
@@ -39,8 +40,9 @@ _RESERVED_RECORD_KEYS = set(
 # Helpers
 # ------------------------------------------------------------------------------
 
+
 def _utc_now_iso() -> str:
-    return datetime.now(timezone.utc).isoformat(timespec="milliseconds")
+    return datetime.now(UTC).isoformat(timespec="milliseconds")
 
 
 def _json_default(value: Any) -> Any:
@@ -68,21 +70,23 @@ def _current_file_path(settings: Settings) -> Path:
 # Trace correlation
 # ------------------------------------------------------------------------------
 
-class TraceContextFilter(logging.Filter):
-    """
-    Injects common app/process fields plus trace/span IDs when OpenTelemetry
-    context is available.
 
-    This keeps the JSONL schema stable even if OTel logging auto-instrumentation
-    is not enabled yet.
+class TraceContextFilter(logging.Filter):
+    """Enrich log records with service metadata and trace identifiers.
+
+    Injects common app and process fields plus trace and span IDs when
+    OpenTelemetry context is available. Keeps the JSONL schema stable even if
+    OTel logging auto-instrumentation is not enabled.
     """
 
     def __init__(self, settings: Settings) -> None:
+        """Capture service name and environment from settings."""
         super().__init__()
         self._service = settings.observability.service_name
         self._environment = settings.app.env
 
     def filter(self, record: logging.LogRecord) -> bool:
+        """Attach correlation fields to ``record``; always return True."""
         record.service = self._service
         record.environment = self._environment
         record.pid = os.getpid()
@@ -113,17 +117,15 @@ class TraceContextFilter(logging.Filter):
 # JSONL formatter
 # ------------------------------------------------------------------------------
 
-class JsonLineFormatter(logging.Formatter):
-    """
-    One JSON object per line.
 
-    Designed for:
-    - local grep/tail/jq
-    - file tailing into Grafana Alloy / Loki
-    - trace/span correlation fields
+class JsonLineFormatter(logging.Formatter):
+    """Format each log record as one JSON object per line.
+
+    Suitable for local ``jq``, Loki or Grafana Alloy tails, and trace fields.
     """
 
     def format(self, record: logging.LogRecord) -> str:
+        """Return a single JSON line for ``record``."""
         message = record.getMessage()
 
         payload: dict[str, Any] = {
@@ -175,13 +177,14 @@ class JsonLineFormatter(logging.Formatter):
 # Rotating file handler that archives rotated files into logs/archive
 # ------------------------------------------------------------------------------
 
+
 class ArchivingRotatingFileHandler(RotatingFileHandler):
-    """
-    Keeps one hot file in logs/current and moves rolled files into logs/archive.
+    """Rotate the hot JSONL file and move rolled files under the archive path.
 
     Example:
-      hot:     logs/current/yourapp-12345.jsonl
-      archive: logs/archive/20260401-153012.123456Z-yourapp-12345.jsonl
+        hot: ``logs/current/yourapp-12345.jsonl``
+        archive: ``logs/archive/20260401-153012.123456Z-yourapp-12345.jsonl``
+
     """
 
     def __init__(
@@ -191,13 +194,14 @@ class ArchivingRotatingFileHandler(RotatingFileHandler):
         service_name: str,
         **kwargs: Any,
     ) -> None:
+        """Configure rotation with a dedicated archive directory."""
         self.archive_dir = archive_dir
         self.service_name = service_name
         self.archive_dir.mkdir(parents=True, exist_ok=True)
         super().__init__(**kwargs)
 
     def _archive_path(self) -> Path:
-        ts = datetime.now(timezone.utc).strftime("%Y%m%d-%H%M%S.%fZ")
+        ts = datetime.now(UTC).strftime("%Y%m%d-%H%M%S.%fZ")
         pid = os.getpid()
         base = self.archive_dir / f"{ts}-{self.service_name}-{pid}.jsonl"
 
@@ -230,6 +234,7 @@ class ArchivingRotatingFileHandler(RotatingFileHandler):
                 pass
 
     def doRollover(self) -> None:
+        """Move the current file to the archive and continue logging."""
         if self.stream:
             self.stream.close()
             self.stream = None
@@ -250,14 +255,9 @@ class ArchivingRotatingFileHandler(RotatingFileHandler):
 # Public API
 # ------------------------------------------------------------------------------
 
-def configure_logging(settings: Settings | None = None) -> None:
-    """
-    Configure process-local logging.
 
-    Call this once per process:
-    - in FastAPI startup / lifespan
-    - in each worker subprocess entrypoint
-    """
+def configure_logging(settings: Settings | None = None) -> None:
+    """Configure process-local logging once (FastAPI lifespan or worker entry)."""
     global _LOGGING_CONFIGURED, _LOG_QUEUE, _QUEUE_LISTENER, _FILE_HANDLER
 
     if _LOGGING_CONFIGURED:
@@ -321,6 +321,7 @@ def configure_logging(settings: Settings | None = None) -> None:
 
 
 def shutdown_logging() -> None:
+    """Stop the queue listener and close the file handler."""
     global _LOGGING_CONFIGURED, _LOG_QUEUE, _QUEUE_LISTENER, _FILE_HANDLER
 
     if _QUEUE_LISTENER is not None:
@@ -336,11 +337,13 @@ def shutdown_logging() -> None:
 
 
 def reconfigure_logging(settings: Settings | None = None) -> None:
+    """Tear down logging and rebuild handlers with optional new settings."""
     shutdown_logging()
     configure_logging(settings=settings)
 
 
 def get_logger(name: str | None = None) -> logging.Logger:
+    """Return the application logger or a named child logger."""
     return logging.getLogger(name if name else "yourapp")
 
 

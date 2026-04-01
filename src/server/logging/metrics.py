@@ -1,10 +1,12 @@
+"""Prometheus metrics, HTTP middleware, and pipeline instrumentation helpers."""
+
 from __future__ import annotations
 
 import os
 import time
+from collections.abc import Callable
 from contextlib import contextmanager
 from dataclasses import dataclass
-from typing import Callable
 
 from fastapi import FastAPI, Request, Response
 from prometheus_client import (
@@ -12,13 +14,11 @@ from prometheus_client import (
     Counter,
     Gauge,
     Histogram,
-    REGISTRY,
     make_asgi_app,
     multiprocess,
 )
 
 from .config import Settings, get_settings
-
 
 # ------------------------------------------------------------------------------
 # Small config note:
@@ -50,15 +50,10 @@ def _route_template(request: Request) -> str:
 
 
 def _make_metrics_asgi_app():
-    """
-    Build the ASGI app that serves /metrics.
+    """Build the ASGI application that exposes Prometheus metrics.
 
-    Normal mode:
-      - uses the default registry
-
-    Multiprocess mode:
-      - uses a fresh CollectorRegistry
-      - attaches MultiProcessCollector
+    Uses the default registry unless ``PROMETHEUS_MULTIPROC_DIR`` is set; then
+    attaches ``MultiProcessCollector`` to a fresh ``CollectorRegistry``.
     """
     if _is_multiprocess_enabled():
         registry = CollectorRegistry()
@@ -70,6 +65,8 @@ def _make_metrics_asgi_app():
 
 @dataclass(slots=True)
 class Metrics:
+    """Prometheus counters, histograms, and gauges used by the API and workers."""
+
     # HTTP / API metrics
     http_requests_total: Counter
     http_request_duration_seconds: Histogram
@@ -86,7 +83,8 @@ class Metrics:
     config_write_total: Counter
 
     @classmethod
-    def create(cls, settings: Settings) -> "Metrics":
+    def create(cls, settings: Settings) -> Metrics:
+        """Construct metric instruments using namespace and subsystem from settings."""
         namespace = settings.metrics.namespace
         subsystem = settings.metrics.subsystem
 
@@ -200,6 +198,7 @@ _metrics_singleton: Metrics | None = None
 
 
 def get_metrics(settings: Settings | None = None) -> Metrics:
+    """Return the lazily created process-wide ``Metrics`` bundle."""
     global _metrics_singleton
     if _metrics_singleton is None:
         _metrics_singleton = Metrics.create(settings or get_settings())
@@ -207,19 +206,19 @@ def get_metrics(settings: Settings | None = None) -> Metrics:
 
 
 def reset_metrics_for_tests() -> None:
-    """
-    Handy for tests if you need to recreate metrics in a fresh interpreter.
-    """
+    """Clear the metrics singleton (for tests in a fresh interpreter)."""
     global _metrics_singleton
     _metrics_singleton = None
 
 
 def mount_metrics_endpoint(app: FastAPI, settings: Settings | None = None) -> None:
+    """Mount the Prometheus scrape endpoint on the FastAPI app."""
     settings = settings or get_settings()
     app.mount(settings.metrics.path, _make_metrics_asgi_app())
 
 
 def install_http_metrics_middleware(app: FastAPI, settings: Settings | None = None) -> None:
+    """Register middleware that records request counts, latency, and in-flight gauge."""
     settings = settings or get_settings()
     metrics = get_metrics(settings)
 
@@ -265,11 +264,7 @@ def install_http_metrics_middleware(app: FastAPI, settings: Settings | None = No
 
 
 def setup_metrics(app: FastAPI, settings: Settings | None = None) -> None:
-    """
-    Main app hook:
-    - mounts /metrics
-    - adds HTTP request middleware
-    """
+    """Mount ``/metrics`` and install HTTP request metrics middleware."""
     settings = settings or get_settings()
     mount_metrics_endpoint(app, settings)
     install_http_metrics_middleware(app, settings)
@@ -277,12 +272,12 @@ def setup_metrics(app: FastAPI, settings: Settings | None = None) -> None:
 
 @contextmanager
 def worker_active(worker_type: str = "pipeline"):
-    """
-    Context manager for worker lifecycle.
+    """Increment active worker gauge for the block duration.
 
     Example:
         with worker_active("bot"):
             run_worker()
+
     """
     metrics = get_metrics()
     gauge = metrics.worker_processes_active.labels(worker_type=worker_type)
@@ -295,12 +290,12 @@ def worker_active(worker_type: str = "pipeline"):
 
 @contextmanager
 def pipeline_stage(stage: str):
-    """
-    Time one pipeline stage and record success/failure.
+    """Time a pipeline stage and record success, duration, or failure counts.
 
     Example:
         with pipeline_stage("embed"):
             run_embedding_step()
+
     """
     metrics = get_metrics()
     start = time.perf_counter()
@@ -325,9 +320,7 @@ def pipeline_stage(stage: str):
 
 
 def observe_pipeline_stage(stage: str, duration_seconds: float, status: str = "ok") -> None:
-    """
-    Manual version of pipeline_stage() when you already measured duration yourself.
-    """
+    """Record pipeline stage totals and duration when timing is done manually."""
     metrics = get_metrics()
     metrics.pipeline_stage_total.labels(stage=stage, status=status).inc()
     metrics.pipeline_stage_duration_seconds.labels(
@@ -337,6 +330,7 @@ def observe_pipeline_stage(stage: str, duration_seconds: float, status: str = "o
 
 
 def record_pipeline_failure(stage: str, error_type: str) -> None:
+    """Increment the failure counter for a pipeline stage and error type."""
     metrics = get_metrics()
     metrics.pipeline_stage_failures_total.labels(
         stage=stage,
@@ -345,10 +339,12 @@ def record_pipeline_failure(stage: str, error_type: str) -> None:
 
 
 def set_queue_depth(queue_name: str, depth: int) -> None:
+    """Set the labeled queue depth gauge for pipeline backpressure."""
     metrics = get_metrics()
     metrics.pipeline_queue_depth.labels(queue_name=queue_name).set(depth)
 
 
 def record_config_write(success: bool) -> None:
+    """Count persisted configuration writes by success or error result."""
     metrics = get_metrics()
     metrics.config_write_total.labels(result="ok" if success else "error").inc()
