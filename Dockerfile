@@ -44,11 +44,11 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 WORKDIR /app
 
 COPY --from=builder /opt/venv /opt/venv
-COPY config/app.template.toml ./config/app.template.toml
+COPY config/defaults.toml ./config/defaults.toml
 
 RUN mkdir -p /app/config/secrets /app/logs/current /app/logs/archive
 
 EXPOSE 8080
 
 ENTRYPOINT ["/usr/bin/tini", "--"]
-CMD ["python", "-m", "yourapp"]
+CMD ["uvicorn", "server.runtime.main:app", "--host", "0.0.0.0", "--port", "8080"]

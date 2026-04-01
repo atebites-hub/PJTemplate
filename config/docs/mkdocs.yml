@@ -13,12 +13,17 @@ theme:
 
 nav:
   - Home: index.md
-  - Agents:
-      - Architecture: agents/architecture.md
-      - Workflows: agents/workflows.md
-  - Memory:
-      - Current State: memory/current-state.md
-      - Gotchas: memory/gotchas.md
+  - Agent templates:
+      - App flow: agents/app_flow_template.md
+      - Client guidelines: agents/client_guidelines_template.md
+      - Coding standards: agents/coding_standards_template.md
+      - Documentation guidelines: agents/documentation_guidelines_template.md
+      - File structure: agents/file_structure_template.md
+      - Implementation plan: agents/implementation_plan_template.md
+      - Project requirements: agents/project_requirements_template.md
+      - Server structure: agents/server_structure_template.md
+      - Technology stack: agents/technology_stack_template.md
+      - Testing guidelines: agents/testing_guidelines_template.md
 
 plugins:
   - search

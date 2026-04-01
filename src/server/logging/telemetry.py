@@ -7,12 +7,13 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 
-from .config import Settings, ensure_runtime_dirs, get_settings
+from server.config import Settings, ensure_runtime_dirs, get_settings
+
 from .logging import configure_logging, shutdown_logging
 from .metrics import setup_metrics
 from .tracing import configure_tracing, shutdown_tracing
 
-_TELEMETRY_CONFIGURED = False
+_telemetry_configured = False
 
 
 def setup_telemetry(
@@ -24,33 +25,33 @@ def setup_telemetry(
     Pass ``app`` in the API process to enable FastAPI metrics; omit it in
     workers that only need logging and tracing.
     """
-    global _TELEMETRY_CONFIGURED
+    global _telemetry_configured
 
-    if _TELEMETRY_CONFIGURED:
+    if _telemetry_configured:
         return
 
-    settings = settings or get_settings()
+    resolved: Settings = settings if settings is not None else get_settings()
 
-    ensure_runtime_dirs(settings)
-    configure_logging(settings)
+    ensure_runtime_dirs(resolved)
+    configure_logging(resolved)
 
-    if settings.observability.tracing_enabled:
-        configure_tracing(app=app, settings=settings)
+    if resolved.observability.tracing_enabled:
+        configure_tracing(app=app, settings=resolved)
 
-    if app is not None and settings.observability.metrics_enabled:
-        setup_metrics(app, settings)
+    if app is not None and resolved.observability.metrics_enabled:
+        setup_metrics(app, resolved)
 
-    _TELEMETRY_CONFIGURED = True
+    _telemetry_configured = True
 
 
 def shutdown_telemetry() -> None:
     """Shut down tracing and logging for this process."""
-    global _TELEMETRY_CONFIGURED
+    global _telemetry_configured
 
     shutdown_tracing()
     shutdown_logging()
 
-    _TELEMETRY_CONFIGURED = False
+    _telemetry_configured = False
 
 
 @asynccontextmanager

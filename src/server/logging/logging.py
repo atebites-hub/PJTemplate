@@ -10,18 +10,18 @@ import queue
 from datetime import UTC, datetime
 from logging.handlers import QueueHandler, QueueListener, RotatingFileHandler
 from pathlib import Path
-from typing import Any
+from typing import Any, override
 
-from .config import Settings, ensure_runtime_dirs, get_settings
+from server.config import Settings, ensure_runtime_dirs, get_settings
 
 # ------------------------------------------------------------------------------
 # Globals
 # ------------------------------------------------------------------------------
 
-_LOGGING_CONFIGURED = False
-_LOG_QUEUE: queue.SimpleQueue[logging.LogRecord] | None = None
-_QUEUE_LISTENER: QueueListener | None = None
-_FILE_HANDLER: logging.Handler | None = None
+_logging_configured = False
+_log_queue: queue.SimpleQueue[logging.LogRecord] | None = None
+_queue_listener: QueueListener | None = None
+_file_handler: logging.Handler | None = None
 
 _RESERVED_RECORD_KEYS = set(
     logging.LogRecord(
@@ -42,18 +42,21 @@ _RESERVED_RECORD_KEYS = set(
 
 
 def _utc_now_iso() -> str:
+    """Return the current UTC time as an ISO-8601 string with millisecond precision."""
     return datetime.now(UTC).isoformat(timespec="milliseconds")
 
 
-def _json_default(value: Any) -> Any:
+def _json_default(value: object) -> object:
+    """Serialize non-JSON-native values for :func:`json.dumps`."""
     if isinstance(value, Path):
         return str(value)
     if isinstance(value, (set, frozenset)):
-        return sorted(value)
+        return sorted(value, key=repr)
     return repr(value)
 
 
 def _coerce_level(level_name: str) -> int:
+    """Map a level name to the stdlib ``logging`` numeric level."""
     level = getattr(logging, level_name.upper(), None)
     if not isinstance(level, int):
         raise ValueError(f"Invalid logging level: {level_name}")
@@ -61,6 +64,7 @@ def _coerce_level(level_name: str) -> int:
 
 
 def _current_file_path(settings: Settings) -> Path:
+    """Path to the active JSONL log file for this process."""
     service = settings.observability.service_name
     pid = os.getpid()
     return settings.log_current_path / f"{service}-{pid}.jsonl"
@@ -82,9 +86,10 @@ class TraceContextFilter(logging.Filter):
     def __init__(self, settings: Settings) -> None:
         """Capture service name and environment from settings."""
         super().__init__()
-        self._service = settings.observability.service_name
-        self._environment = settings.app.env
+        self._service: str = settings.observability.service_name
+        self._environment: str = settings.app.env
 
+    @override
     def filter(self, record: logging.LogRecord) -> bool:
         """Attach correlation fields to ``record``; always return True."""
         record.service = self._service
@@ -124,6 +129,7 @@ class JsonLineFormatter(logging.Formatter):
     Suitable for local ``jq``, Loki or Grafana Alloy tails, and trace fields.
     """
 
+    @override
     def format(self, record: logging.LogRecord) -> str:
         """Return a single JSON line for ``record``."""
         message = record.getMessage()
@@ -192,15 +198,26 @@ class ArchivingRotatingFileHandler(RotatingFileHandler):
         *,
         archive_dir: Path,
         service_name: str,
-        **kwargs: Any,
+        filename: str,
+        maxBytes: int = 0,
+        backupCount: int = 0,
+        encoding: str | None = None,
+        delay: bool = False,
     ) -> None:
         """Configure rotation with a dedicated archive directory."""
-        self.archive_dir = archive_dir
-        self.service_name = service_name
+        self.archive_dir: Path = archive_dir
+        self.service_name: str = service_name
         self.archive_dir.mkdir(parents=True, exist_ok=True)
-        super().__init__(**kwargs)
+        super().__init__(
+            filename,
+            maxBytes=maxBytes,
+            backupCount=backupCount,
+            encoding=encoding,
+            delay=delay,
+        )
 
     def _archive_path(self) -> Path:
+        """Pick a unique archive filename for the next rolled log file."""
         ts = datetime.now(UTC).strftime("%Y%m%d-%H%M%S.%fZ")
         pid = os.getpid()
         base = self.archive_dir / f"{ts}-{self.service_name}-{pid}.jsonl"
@@ -216,6 +233,7 @@ class ArchivingRotatingFileHandler(RotatingFileHandler):
             i += 1
 
     def _prune_archives(self) -> None:
+        """Remove oldest archive files beyond ``backupCount`` for this PID."""
         if self.backupCount <= 0:
             return
 
@@ -233,11 +251,12 @@ class ArchivingRotatingFileHandler(RotatingFileHandler):
             except FileNotFoundError:
                 pass
 
+    @override
     def doRollover(self) -> None:
         """Move the current file to the archive and continue logging."""
         if self.stream:
             self.stream.close()
-            self.stream = None
+            self.stream = None  # pyright: ignore[reportAttributeAccessIssue]
 
         current_path = Path(self.baseFilename)
         if current_path.exists():
@@ -258,26 +277,26 @@ class ArchivingRotatingFileHandler(RotatingFileHandler):
 
 def configure_logging(settings: Settings | None = None) -> None:
     """Configure process-local logging once (FastAPI lifespan or worker entry)."""
-    global _LOGGING_CONFIGURED, _LOG_QUEUE, _QUEUE_LISTENER, _FILE_HANDLER
+    global _logging_configured, _log_queue, _queue_listener, _file_handler
 
-    if _LOGGING_CONFIGURED:
+    if _logging_configured:
         return
 
-    settings = settings or get_settings()
-    ensure_runtime_dirs(settings)
+    resolved: Settings = settings if settings is not None else get_settings()
+    ensure_runtime_dirs(resolved)
 
-    level = _coerce_level(settings.logging.level)
-    current_file = _current_file_path(settings)
+    level = _coerce_level(resolved.logging.level)
+    current_file = _current_file_path(resolved)
 
     formatter = JsonLineFormatter()
-    context_filter = TraceContextFilter(settings)
+    context_filter = TraceContextFilter(resolved)
 
     file_handler = ArchivingRotatingFileHandler(
         filename=str(current_file),
-        archive_dir=settings.log_archive_path,
-        service_name=settings.observability.service_name,
-        maxBytes=settings.logging.max_mb * 1024 * 1024,
-        backupCount=settings.logging.backup_count,
+        archive_dir=resolved.log_archive_path,
+        service_name=resolved.observability.service_name,
+        maxBytes=resolved.logging.max_mb * 1024 * 1024,
+        backupCount=resolved.logging.backup_count,
         encoding="utf-8",
         delay=True,
     )
@@ -314,26 +333,26 @@ def configure_logging(settings: Settings | None = None) -> None:
 
     logging.captureWarnings(True)
 
-    _LOG_QUEUE = log_queue
-    _QUEUE_LISTENER = queue_listener
-    _FILE_HANDLER = file_handler
-    _LOGGING_CONFIGURED = True
+    _log_queue = log_queue
+    _queue_listener = queue_listener
+    _file_handler = file_handler
+    _logging_configured = True
 
 
 def shutdown_logging() -> None:
     """Stop the queue listener and close the file handler."""
-    global _LOGGING_CONFIGURED, _LOG_QUEUE, _QUEUE_LISTENER, _FILE_HANDLER
+    global _logging_configured, _log_queue, _queue_listener, _file_handler
 
-    if _QUEUE_LISTENER is not None:
-        _QUEUE_LISTENER.stop()
-        _QUEUE_LISTENER = None
+    if _queue_listener is not None:
+        _queue_listener.stop()
+        _queue_listener = None
 
-    if _FILE_HANDLER is not None:
-        _FILE_HANDLER.close()
-        _FILE_HANDLER = None
+    if _file_handler is not None:
+        _file_handler.close()
+        _file_handler = None
 
-    _LOG_QUEUE = None
-    _LOGGING_CONFIGURED = False
+    _log_queue = None
+    _logging_configured = False
 
 
 def reconfigure_logging(settings: Settings | None = None) -> None:
@@ -347,4 +366,4 @@ def get_logger(name: str | None = None) -> logging.Logger:
     return logging.getLogger(name if name else "yourapp")
 
 
-atexit.register(shutdown_logging)
+_ = atexit.register(shutdown_logging)

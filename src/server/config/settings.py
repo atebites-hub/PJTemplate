@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from functools import lru_cache
 from pathlib import Path
-from typing import Any
+from typing import ClassVar, cast, override
 
 from pydantic import BaseModel, SecretStr, field_validator
 from pydantic_settings import (
@@ -19,7 +19,7 @@ from tomlkit import document, dumps, parse, table
 # Paths
 # ------------------------------------------------------------------------------
 
-# Assumes this file lives at: src/yourapp/core/config.py
+# Assumes this file lives at: src/server/config/settings.py
 REPO_ROOT = Path(__file__).resolve().parents[3]
 CONFIG_DIR = REPO_ROOT / "config"
 APP_CONFIG_PATH = CONFIG_DIR / "defaults.toml"
@@ -144,13 +144,11 @@ class Settings(BaseSettings):
     Init kwargs are allowed so tests can override settings cleanly.
     """
 
-    model_config = SettingsConfigDict(
-        # Pydantic settings behavior
+    # Pyright's pydantic-settings stubs do not match runtime kwargs; values are valid at runtime.
+    model_config: ClassVar[SettingsConfigDict] = SettingsConfigDict(  # pyright: ignore[reportCallIssue]
         extra="ignore",
         validate_default=True,
-        # TOML source path
         toml_file=str(APP_CONFIG_PATH),
-        # Mounted secrets
         secrets_dir=[str(LOCAL_SECRETS_DIR), str(RUNTIME_SECRETS_DIR)],
         secrets_dir_missing="ok",
     )
@@ -173,6 +171,7 @@ class Settings(BaseSettings):
     redis_password: SecretStr | None = None
 
     @classmethod
+    @override
     def settings_customise_sources(
         cls,
         settings_cls: type[BaseSettings],
@@ -194,17 +193,20 @@ class Settings(BaseSettings):
             file_secret_settings,
         )
 
-    def non_secret_dump(self) -> dict[str, Any]:
+    def non_secret_dump(self) -> dict[str, dict[str, object]]:
         """Return only the writable, non-secret config sections."""
-        return self.model_dump(
-            mode="python",
-            exclude={
-                "openai_api_key",
-                "anthropic_api_key",
-                "jwt_signing_key",
-                "postgres_password",
-                "redis_password",
-            },
+        return cast(
+            dict[str, dict[str, object]],
+            self.model_dump(
+                mode="python",
+                exclude={
+                    "openai_api_key",
+                    "anthropic_api_key",
+                    "jwt_signing_key",
+                    "postgres_password",
+                    "redis_password",
+                },
+            ),
         )
 
     @property
@@ -247,9 +249,9 @@ def reload_settings() -> Settings:
 
 def ensure_runtime_dirs(settings: Settings | None = None) -> None:
     """Create log current and archive directories if they are missing."""
-    settings = settings or get_settings()
-    settings.log_current_path.mkdir(parents=True, exist_ok=True)
-    settings.log_archive_path.mkdir(parents=True, exist_ok=True)
+    resolved: Settings = settings if settings is not None else get_settings()
+    resolved.log_current_path.mkdir(parents=True, exist_ok=True)
+    resolved.log_archive_path.mkdir(parents=True, exist_ok=True)
 
 
 # ------------------------------------------------------------------------------
@@ -282,4 +284,5 @@ def save_settings(
             section_table[key] = value
         doc[section_name] = section_table
 
-    path.write_text(dumps(doc), encoding="utf-8")
+    toml_out = dumps(doc)
+    _ = path.write_text(toml_out, encoding="utf-8")

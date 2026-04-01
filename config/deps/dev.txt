@@ -1,4 +1,0 @@
-# Alias file only.
-# Canonical dev lockfile: repo/requirements-dev.txt
-
--r ../../requirements-dev.txt

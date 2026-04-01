@@ -12,6 +12,7 @@ config/secrets/*
 # Builds
 dist/
 build/
+site/
 *.min.js
 
 # Tests
@@ -27,6 +28,8 @@ Thumbs.db
 __pycache__/
 *.pyc
 .venv/
+.pytest_cache/
+.venv-ci/
 
 # General
 *.tmp

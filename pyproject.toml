@@ -40,7 +40,7 @@ dev = [
 ]
 
 [tool.hatch.build.targets.wheel]
-packages = ["src/yourapp"]
+packages = ["src/server"]
 
 [tool.hatch.build.targets.sdist]
 exclude = [
@@ -72,6 +72,20 @@ include = ["src", "tests"]
 typeCheckingMode = "recommended"
 pythonVersion = "3.12"
 reportMissingTypeStubs = false
+# Resolve the `server` package when the project is checked from the repo root.
+executionEnvironments = [{ root = ".", pythonVersion = "3.12", extraPaths = ["src"] }]
+# Template-friendly defaults (strict typing for public APIs without noisy third-party stubs).
+reportAny = false
+reportExplicitAny = false
+reportUnknownVariableType = false
+reportUnknownParameterType = false
+reportUnknownMemberType = false
+reportUnknownArgumentType = false
+reportImplicitOverride = false
+reportUnannotatedClassAttribute = false
+reportUnusedCallResult = false
+reportUnusedFunction = false
+reportUnnecessaryComparison = false
 
 [tool.interrogate]
 fail-under = 90

@@ -20,17 +20,18 @@ from opentelemetry.sdk.trace.export import BatchSpanProcessor
 from opentelemetry.sdk.trace.sampling import ParentBased, TraceIdRatioBased
 from opentelemetry.trace import Span, SpanKind, Tracer
 
-from .config import Settings, get_settings
+from server.config import Settings, get_settings
 
-_TRACING_CONFIGURED = False
-_FASTAPI_INSTRUMENTED = False
-_TRACER_PROVIDER: TracerProvider | None = None
+_tracing_configured = False
+_fastapi_instrumented = False
+_tracer_provider: TracerProvider | None = None
 
 TRACEPARENT_ENV_KEY = "YOURAPP_TRACEPARENT"
 BAGGAGE_ENV_KEY = "YOURAPP_BAGGAGE"
 
 
 def _build_resource(settings: Settings) -> Resource:
+    """Build the OpenTelemetry :class:`Resource` for service name and environment."""
     return Resource.create(
         {
             "service.name": settings.observability.service_name,
@@ -40,17 +41,17 @@ def _build_resource(settings: Settings) -> Resource:
 
 
 def _build_sampler(settings: Settings):
+    """Create a parent-based sampler using the configured head-sample ratio."""
     ratio = settings.observability.sample_ratio
     return ParentBased(TraceIdRatioBased(ratio))
 
 
 def _excluded_urls(settings: Settings) -> str:
+    """Comma-separated regex fragment list for URLs to skip when instrumenting FastAPI."""
     paths: list[str] = []
 
     # Avoid noisy self-scrapes and docs endpoints by default.
-    metrics_path = getattr(getattr(settings, "metrics", None), "path", None)
-    if metrics_path:
-        paths.append(metrics_path)
+    paths.append(settings.metrics.path)
 
     fastapi_cfg = getattr(settings, "fastapi", None)
     if fastapi_cfg is not None:
@@ -68,24 +69,24 @@ def configure_tracing(
     settings: Settings | None = None,
 ) -> None:
     """Configure OpenTelemetry tracing once per process (API or worker)."""
-    global _TRACING_CONFIGURED, _TRACER_PROVIDER
+    global _tracing_configured, _tracer_provider
 
-    if _TRACING_CONFIGURED:
+    if _tracing_configured:
         if app is not None:
             instrument_fastapi(app, settings=settings)
         return
 
-    settings = settings or get_settings()
+    resolved: Settings = settings if settings is not None else get_settings()
 
     provider = TracerProvider(
-        resource=_build_resource(settings),
-        sampler=_build_sampler(settings),
+        resource=_build_resource(resolved),
+        sampler=_build_sampler(resolved),
     )
 
     exporter = OTLPSpanExporter(
-        endpoint=settings.observability.otlp_endpoint,
-        insecure=settings.tracing.insecure,
-        timeout=settings.tracing.timeout_ms / 1000.0,
+        endpoint=resolved.observability.otlp_endpoint,
+        insecure=resolved.tracing.insecure,
+        timeout=resolved.tracing.timeout_ms / 1000.0,
     )
 
     span_processor = BatchSpanProcessor(exporter)
@@ -93,11 +94,11 @@ def configure_tracing(
 
     trace.set_tracer_provider(provider)
 
-    _TRACER_PROVIDER = provider
-    _TRACING_CONFIGURED = True
+    _tracer_provider = provider
+    _tracing_configured = True
 
     if app is not None:
-        instrument_fastapi(app, settings=settings)
+        instrument_fastapi(app, settings=resolved)
 
 
 def instrument_fastapi(
@@ -105,30 +106,30 @@ def instrument_fastapi(
     settings: Settings | None = None,
 ) -> None:
     """Instrument FastAPI routes; no-op if already instrumented."""
-    global _FASTAPI_INSTRUMENTED
+    global _fastapi_instrumented
 
-    if _FASTAPI_INSTRUMENTED:
+    if _fastapi_instrumented:
         return
 
-    settings = settings or get_settings()
+    resolved: Settings = settings if settings is not None else get_settings()
 
     FastAPIInstrumentor.instrument_app(
         app,
-        excluded_urls=_excluded_urls(settings),
+        excluded_urls=_excluded_urls(resolved),
     )
 
-    _FASTAPI_INSTRUMENTED = True
+    _fastapi_instrumented = True
 
 
 def shutdown_tracing() -> None:
     """Flush and shut down the global tracer provider if configured."""
-    global _TRACING_CONFIGURED, _TRACER_PROVIDER
+    global _tracing_configured, _tracer_provider
 
-    if _TRACER_PROVIDER is not None:
-        _TRACER_PROVIDER.shutdown()
-        _TRACER_PROVIDER = None
+    if _tracer_provider is not None:
+        _tracer_provider.shutdown()
+        _tracer_provider = None
 
-    _TRACING_CONFIGURED = False
+    _tracing_configured = False
 
 
 def get_tracer(name: str | None = None) -> Tracer:
@@ -174,7 +175,7 @@ def add_span_event(
 ) -> None:
     """Add a named event to the current span, if any."""
     span = trace.get_current_span()
-    if span is not None:
+    if span.is_recording():
         span.add_event(name, attributes=dict(attributes or {}))
 
 
@@ -282,4 +283,4 @@ def pipeline_stage(
         yield span
 
 
-atexit.register(shutdown_tracing)
+_ = atexit.register(shutdown_tracing)

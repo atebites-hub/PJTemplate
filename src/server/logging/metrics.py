@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import os
 import time
-from collections.abc import Callable
+from collections.abc import Awaitable, Callable
 from contextlib import contextmanager
 from dataclasses import dataclass
 
@@ -18,7 +18,7 @@ from prometheus_client import (
     multiprocess,
 )
 
-from .config import Settings, get_settings
+from server.config import Settings, get_settings
 
 # ------------------------------------------------------------------------------
 # Small config note:
@@ -37,11 +37,13 @@ from .config import Settings, get_settings
 
 
 def _is_multiprocess_enabled() -> bool:
+    """Return True when Prometheus multiprocess mode is enabled via env."""
     value = os.getenv("PROMETHEUS_MULTIPROC_DIR", "").strip()
     return bool(value)
 
 
 def _route_template(request: Request) -> str:
+    """Prefer the FastAPI route template path for metric labels; else raw path."""
     route = request.scope.get("route")
     path = getattr(route, "path", None)
     if isinstance(path, str) and path:
@@ -57,7 +59,7 @@ def _make_metrics_asgi_app():
     """
     if _is_multiprocess_enabled():
         registry = CollectorRegistry()
-        multiprocess.MultiProcessCollector(registry)
+        _ = multiprocess.MultiProcessCollector(registry)
         return make_asgi_app(registry=registry)
 
     return make_asgi_app()
@@ -201,7 +203,8 @@ def get_metrics(settings: Settings | None = None) -> Metrics:
     """Return the lazily created process-wide ``Metrics`` bundle."""
     global _metrics_singleton
     if _metrics_singleton is None:
-        _metrics_singleton = Metrics.create(settings or get_settings())
+        resolved: Settings = settings if settings is not None else get_settings()
+        _metrics_singleton = Metrics.create(resolved)
     return _metrics_singleton
 
 
@@ -213,21 +216,25 @@ def reset_metrics_for_tests() -> None:
 
 def mount_metrics_endpoint(app: FastAPI, settings: Settings | None = None) -> None:
     """Mount the Prometheus scrape endpoint on the FastAPI app."""
-    settings = settings or get_settings()
-    app.mount(settings.metrics.path, _make_metrics_asgi_app())
+    resolved: Settings = settings if settings is not None else get_settings()
+    app.mount(resolved.metrics.path, _make_metrics_asgi_app())
 
 
 def install_http_metrics_middleware(app: FastAPI, settings: Settings | None = None) -> None:
     """Register middleware that records request counts, latency, and in-flight gauge."""
-    settings = settings or get_settings()
-    metrics = get_metrics(settings)
+    resolved: Settings = settings if settings is not None else get_settings()
+    metrics = get_metrics(resolved)
 
     # Avoid double-install if called twice.
     if getattr(app.state, "_http_metrics_installed", False):
         return
 
     @app.middleware("http")
-    async def prometheus_http_metrics(request: Request, call_next: Callable) -> Response:
+    async def prometheus_http_metrics(
+        request: Request,
+        call_next: Callable[[Request], Awaitable[Response]],
+    ) -> Response:
+        """Record HTTP metrics for each request (count, duration, in-flight)."""
         method = request.method
         path = _route_template(request)
 
@@ -265,9 +272,9 @@ def install_http_metrics_middleware(app: FastAPI, settings: Settings | None = No
 
 def setup_metrics(app: FastAPI, settings: Settings | None = None) -> None:
     """Mount ``/metrics`` and install HTTP request metrics middleware."""
-    settings = settings or get_settings()
-    mount_metrics_endpoint(app, settings)
-    install_http_metrics_middleware(app, settings)
+    resolved: Settings = settings if settings is not None else get_settings()
+    mount_metrics_endpoint(app, resolved)
+    install_http_metrics_middleware(app, resolved)
 
 
 @contextmanager
