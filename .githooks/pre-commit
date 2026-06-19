@@ -1,0 +1,31 @@
+#!/usr/bin/env bash
+# .githooks/pre-commit — Tier-1 authoritative compliance gate (portable, no deps).
+#
+# Activate once per clone (scripts/setup.sh does this for you):
+#   git config core.hooksPath .githooks
+#
+# This hook is the portable enforcement spine: it runs the same checker that CI
+# runs, so a non-compliant change is blocked the same way on any harness. It is
+# bypassable with `git commit --no-verify`; the CI backstop (Tier 3) re-checks the
+# PR range and cannot be bypassed. See docs/agents/enforcement_matrix.md.
+
+set -Eeuo pipefail
+
+REPO_ROOT="$(git rev-parse --show-toplevel)"
+cd "$REPO_ROOT"
+
+# Process-artifact compliance: memory present (C1), docs/code mirror (C2),
+# reasoning recorded (C3). Fires only when relevant; explains what is missing.
+scripts/check-task-compliance.sh --staged
+
+# Fast lint/format feedback on staged Python only (CI enforces over the whole tree).
+if command -v ruff >/dev/null 2>&1; then
+  staged_py=()
+  while IFS= read -r f; do
+    [[ -n "$f" ]] && staged_py+=("$f")
+  done < <(git diff --cached --name-only --diff-filter=ACMR -- '*.py')
+  if [[ ${#staged_py[@]} -gt 0 ]]; then
+    ruff check "${staged_py[@]}"
+    ruff format --check "${staged_py[@]}"
+  fi
+fi

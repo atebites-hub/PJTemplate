@@ -5,6 +5,10 @@ site_url: http://localhost:8000
 docs_dir: ../../docs
 site_dir: ../../site/docs
 
+# Task memories are local-only (gitignored) and not published documentation.
+exclude_docs: |
+  memories/
+
 strict: true
 use_directory_urls: true
 
@@ -24,6 +28,16 @@ nav:
       - Server structure: agents/server_structure_template.md
       - Technology stack: agents/technology_stack_template.md
       - Testing guidelines: agents/testing_guidelines_template.md
+      - Enforcement matrix: agents/enforcement_matrix.md
+  - Code documentation:
+      - server/config/constants: code/server/config/constants.md
+      - server/config/settings: code/server/config/settings.md
+      - server/runtime/main: code/server/runtime/main.md
+      - server/logging/logging: code/server/logging/logging.md
+      - server/logging/metrics: code/server/logging/metrics.md
+      - server/logging/telemetry: code/server/logging/telemetry.md
+      - server/logging/tracing: code/server/logging/tracing.md
+      - client/scripts/main: code/client/scripts/main.md
 
 plugins:
   - search

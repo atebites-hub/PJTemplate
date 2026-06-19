@@ -19,6 +19,8 @@ site/
 coverage/
 .nyc_output/
 .ruff_cache/
+.coverage
+.coverage.*
 
 # OS
 Thumbs.db
@@ -38,6 +40,13 @@ __pycache__/
 # Agent tooling (commit .agents/settings.json; keep personal overrides local)
 .agents/settings.local.json
 .claude/settings.local.json
+.agents/scheduled_tasks.lock
+
+# Task memories are kept local by default so the template ships clean. The memory
+# system still works per-clone; to version-control your project's task memories
+# (recommended for team retrieval), delete the next two lines.
+docs/memories/*.md
+!docs/memories/.gitkeep
 
 # GitNexus runtime artifacts (the code graph + packed bundles)
 .gitnexus/

@@ -64,15 +64,22 @@ Use `nextThoughtNeeded: true` for extra thoughts if you need more refinement aft
 
 See [references/reasoning-examples.md](references/reasoning-examples.md) for detailed examples.
 
-### Step 4: Document output
+### Step 4: Persist the output into the task memory
 
-After reasoning completes, record:
+Record the reasoning output in the task's memory file (see the `memory-system`
+skill), mapped onto existing fields so there is **one home, not a parallel record**:
 
-- **Retrieval plan** — What you consulted or will consult (docs, memory, code paths)
-- Clear implementation approach
-- Files to create or modify
-- **Test and regression plan** — What must not break; how tests or checks lock that in
-- Documentation to update
+| Reasoning output | Memory field (`assets/memory_template.md`) |
+|------------------|--------------------------------------------|
+| **Retrieval plan** — docs, memory, code paths you consulted or will consult | `- **Context**:` under `## Task (TCREI)` |
+| **Test and regression plan** — what must not break; how tests/checks lock it in | `- **Evaluation**:` under `## Task (TCREI)` |
+| Assumptions, counterpoints, alternatives, risks | `### Key Challenges & Analysis` |
+| Ordered implementation steps; files to create/modify | `- **Plan**:` under `## Task (TCREI)` |
+| Non-obvious insights, docs to update | `### Learnings` |
+
+The compliance check (`scripts/check-task-compliance.sh`, check **C3**) verifies that
+**Context**, **Evaluation**, and **Key Challenges & Analysis** are filled with real
+content — the same fields named here, so what you record is exactly what is checked.
 
 ---
 

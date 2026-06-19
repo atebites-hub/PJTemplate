@@ -109,6 +109,9 @@ echo "==> Writing local .python-version"
 printf '%s\n' "$PYTHON_VERSION" >.python-version
 pyenv local "$PYTHON_VERSION"
 
+echo "==> Activating project git hooks (Tier-1 compliance gate)"
+git config core.hooksPath .githooks
+
 echo "==> Creating virtual environment"
 python -m venv .venv
 # shellcheck source=/dev/null
@@ -139,6 +142,8 @@ Next shell:
   source .venv/bin/activate
 
 Common commands:
+  ./scripts/test-suite.sh          # one-command gate: lint, types, tests + coverage
+  ./scripts/check-task-compliance.sh --staged   # process-artifact gate (also runs pre-commit)
   ruff check .
   ruff format .
   basedpyright
@@ -147,5 +152,7 @@ Common commands:
   interrogate -c pyproject.toml
   mkdocs build -f config/docs/mkdocs.yml --strict
   pytest
+
+Git hooks are active (core.hooksPath=.githooks): commits run the compliance gate.
 
 EOF
