@@ -5,7 +5,7 @@ description: Read and write task memories in docs/memories/. Use when planning, 
 
 # Memory System
 
-Project task memories live in **`docs/memories/`** as Markdown files. This is separate from any host-level memory your agent may use; follow this skill when this repo requires task memory.
+Project task memories live in **`docs/memories/`** as Markdown files. This is separate from any host-level memory you may use; follow this skill when this repo requires task memory.
 
 ## When to use
 
