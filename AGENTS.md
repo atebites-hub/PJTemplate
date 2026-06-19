@@ -21,6 +21,97 @@ Structured reasoning before implementation is handled by the `reasoning-system` 
 
 **Requirement**: Use the `reasoning-system` skill before implementing features, refactoring, or making architectural decisions. Invoke after planning but before editing code. The pass must cover retrieval (docs, task memory, code to read) and testing/regression strategy, not only design.
 
+## Agent Tooling & Integrations
+
+This template is **tool-agnostic by default and Claude-ready by symlink**. The
+canonical files are `AGENTS.md` and the `.agents/` directory; Claude Code reads
+them through committed symlinks.
+
+### How each tool reads this repo
+
+| Source of truth | Claude Code | Codex / Cursor / Zed / Copilot / Windsurf | Gemini CLI |
+| --- | --- | --- | --- |
+| `AGENTS.md` | via `CLAUDE.md` → `AGENTS.md` symlink | natively | via `.gemini/settings.json` (`context.fileName`) |
+| `.agents/` | via `.claude` → `.agents` symlink | `.agents/skills/` natively (Codex) | — |
+
+- **`.claude` → `.agents`** and **`CLAUDE.md` → `AGENTS.md`** are committed
+  symlinks. One source of truth, no duplicated content. (On Windows, symlinks
+  need Developer Mode/admin; otherwise replace `CLAUDE.md` with a one-line
+  `@AGENTS.md` import.)
+- **Skills** live in `.agents/skills/<name>/SKILL.md` (Agent Skills standard:
+  `name` + `description` frontmatter). Claude discovers them at
+  `.claude/skills/` (via the symlink); Codex reads `.agents/skills/` directly.
+  Current skills: `memory-system`, `reasoning-system`.
+
+### Claude Code plugins (auto-enabled)
+
+`.claude/settings.json` (= `.agents/settings.json` via the symlink) registers and
+enables three marketplaces. On first launch Claude prompts each user to trust and
+install them (the prompt is per-user and is skipped in headless `-p` mode — see
+the manual fallback below).
+
+| Plugin | Marketplace | What it adds |
+| --- | --- | --- |
+| `compound-engineering` | `EveryInc/compound-engineering-plugin` | "Compound engineering" workflow: planning/review-heavy skills (`/ce-plan`, `/ce-code-review`, `/ce-debug`, …) + review/research subagents. Run `/ce-setup` once after install. |
+| `superpowers` | `obra/superpowers-marketplace` | Core skills library (TDD, systematic debugging, brainstorming, writing/executing plans, code review, git worktrees). Ships a SessionStart hook. |
+| `ponytail` | `DietrichGebert/ponytail` | "Lazy senior dev mode" — biases toward the simplest, smallest solution (YAGNI, stdlib-first). |
+
+**Manual fallback** (if a plugin isn't auto-installed):
+
+```text
+/plugin marketplace add EveryInc/compound-engineering-plugin
+/plugin install compound-engineering
+/plugin marketplace add obra/superpowers-marketplace
+/plugin install superpowers@superpowers-marketplace
+/plugin marketplace add DietrichGebert/ponytail
+/plugin install ponytail@ponytail
+```
+
+**Other tools.** Each plugin repo also ships Codex/Cursor adapters, e.g. Codex:
+`codex plugin marketplace add EveryInc/compound-engineering-plugin`; Copilot CLI:
+`/plugin marketplace add EveryInc/compound-engineering-plugin` then
+`/plugin install compound-engineering@compound-engineering-plugin`.
+
+> ⚠️ **Supply-chain note.** These plugins load third-party skills/agents/hooks
+> into the agent (superpowers runs a SessionStart shell hook). They track each
+> marketplace's default branch — **review and pin to a reviewed commit** before
+> relying on them in a sensitive project. `ponytail` is a recently-published
+> repo; vet it before trusting it. Any change to `.claude/settings.json` is
+> watched by the npm-worm/persistence audit (`config/security/npm-worm-audit.json`).
+
+### GitNexus (MCP code intelligence)
+
+`.mcp.json` registers a version-pinned GitNexus MCP server (graph-based code
+intelligence — symbol/impact/context queries). Claude auto-spawns it via `npx`
+(**requires Node.js**). For other editors run `gitnexus setup` (auto-configures
+Cursor, Codex, Windsurf). `.gitnexusignore` keeps secrets/build output/logs out
+of the index.
+
+> ℹ️ **License.** GitNexus is **PolyForm Noncommercial 1.0.0**. Personal, hobby,
+> research, and study use is **permitted** — including using this template
+> personally. Only genuinely **commercial** use (yours or a downstream cloner's)
+> would need a separate license from the author.
+
+### Supply-chain security gates
+
+Defense-in-depth, mostly ported from a hardened sibling project. Configs in
+`config/security/`, runners in `scripts/security/`:
+
+- **`./scripts/security/supply-chain-audit.sh`** — one local gate: pip checks +
+  `pip-audit`, OSV-Scanner (digest-pinned image), GuardDog malware heuristics
+  (digest-pinned image), OpenGrep SAST (SHA-256-pinned binary), npm
+  worm/persistence audit, Bandit, and a git submodule inventory. Reports →
+  `logs/current/supply-chain/`. Frontend (npm) gates activate automatically once
+  `src/client/package.json` exists.
+- **CI** (`.github/workflows/ci.yml`) runs the same gates. OSV-Scanner and
+  GuardDog ship **report-only** (`continue-on-error`) so the template stays
+  green; promote them to blocking after curating
+  `config/security/osv-scanner.toml` / `guarddog.json`. OpenGrep and the
+  npm-worm/persistence audit are enforcing.
+- **Pin everything**: GitHub Actions by commit SHA, scanner containers by image
+  digest, the OpenGrep binary by SHA-256, Python deps by hash
+  (`pip --require-hashes`). Track CVE floors with comments in `requirements*.in`.
+
 ## Development Workflow Requirements
 
 ### Before Starting Any Work

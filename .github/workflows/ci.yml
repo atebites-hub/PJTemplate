@@ -56,6 +56,62 @@ jobs:
       - name: pip-audit
         run: pip-audit -r requirements.txt
 
+      - name: Prepare supply-chain report dir
+        run: mkdir -p logs/current/supply-chain
+
+      # Enforcing: only inspects this repo's own tree, no external dep data.
+      - name: npm worm / persistence audit
+        run: |
+          python scripts/security/npm_worm_audit.py \
+            --repo-root "$PWD" \
+            --config config/security/npm-worm-audit.json \
+            --report-path logs/current/supply-chain/npm-worm-audit.json
+
+      # Report-only by default: OSV reads external advisories and may flag the
+      # template's current pins. Curate config/security/osv-scanner.toml
+      # IgnoredVulns (or add version floors) then remove continue-on-error to enforce.
+      - name: OSV-Scanner lockfile audit
+        continue-on-error: true
+        run: |
+          docker run --rm \
+            -v "$PWD:/src:ro" \
+            -v "$PWD/logs/current/supply-chain:/reports" \
+            ghcr.io/google/osv-scanner@sha256:64e86bec6df2466feea5137fc7c78fb3b7c21ec077f014d7130f64810e50676b \
+            scan \
+            -L /src/requirements.txt \
+            -L /src/requirements-dev.txt \
+            --config /src/config/security/osv-scanner.toml \
+            --format json \
+            --output-file /reports/osv-scanner.json
+
+      # Report-only by default: GuardDog malware heuristics over direct deps.
+      # Add exceptions to config/security/guarddog.json then remove continue-on-error to enforce.
+      - name: GuardDog direct dependency malware heuristics
+        continue-on-error: true
+        run: |
+          python scripts/security/guarddog_audit.py \
+            --report-dir logs/current/supply-chain \
+            --config config/security/guarddog.json \
+            --image ghcr.io/datadog/guarddog@sha256:1679817551670ab3665cd0e0192e16d1c871bb29658010052378df026033df3e
+
+      # Enforcing: SHA-256-pinned OpenGrep binary, scans this repo's own source.
+      - name: OpenGrep policy scan
+        run: |
+          mkdir -p logs/current/supply-chain/bin
+          curl -fL --retry 3 --connect-timeout 10 \
+            -o logs/current/supply-chain/bin/opengrep \
+            https://github.com/opengrep/opengrep/releases/download/v1.21.0/opengrep_manylinux_x86
+          echo "9ed0ceee4a3a406d27d40894bcce85ea151be21e6d4b180689689224faff2a3e  logs/current/supply-chain/bin/opengrep" | sha256sum -c -
+          chmod 0755 logs/current/supply-chain/bin/opengrep
+          logs/current/supply-chain/bin/opengrep scan \
+            --config config/security/opengrep.yml \
+            --disable-version-check \
+            --error \
+            --exclude .git --exclude .venv --exclude .venv-ci --exclude logs \
+            --exclude site --exclude dist --exclude vendor --exclude src/client/node_modules \
+            --json --output logs/current/supply-chain/opengrep.json \
+            "$PWD"
+
       - name: Interrogate
         run: interrogate -c pyproject.toml
 
@@ -67,6 +123,18 @@ jobs:
 
       - name: Build wheel
         run: python -m build --wheel
+
+      - name: Upload supply-chain reports
+        if: ${{ always() }}
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: supply-chain-reports
+          path: |
+            logs/current/supply-chain/osv-scanner.json
+            logs/current/supply-chain/guarddog-*.json
+            logs/current/supply-chain/opengrep.json
+            logs/current/supply-chain/npm-worm-audit.json
+          if-no-files-found: ignore
 
       - name: Upload dist artifact
         uses: actions/upload-artifact@v4

@@ -34,3 +34,11 @@ __pycache__/
 # General
 *.tmp
 *.bak
+
+# Agent tooling (commit .agents/settings.json; keep personal overrides local)
+.agents/settings.local.json
+.claude/settings.local.json
+
+# GitNexus runtime artifacts (the code graph + packed bundles)
+.gitnexus/
+gitnexus-*.tgz

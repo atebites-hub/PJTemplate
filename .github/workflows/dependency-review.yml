@@ -1,0 +1,37 @@
+name: dependency-review
+
+on:
+  pull_request:
+
+permissions:
+  contents: read
+  pull-requests: read
+
+jobs:
+  dependency-review:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Explain private personal repo fallback
+        if: ${{ github.event.repository.private == true && github.event.repository.owner.type == 'User' }}
+        run: |
+          echo "::notice title=Dependency Review skipped::GitHub Dependency Review requires Code Security/GHAS for private repositories. The other CI lockfile gates (pip-audit, OSV-Scanner, GuardDog, OpenGrep) remain enforced."
+          cat <<'MARKDOWN' >> "$GITHUB_STEP_SUMMARY"
+          ## Dependency Review skipped
+
+          GitHub's Dependency Review action is unavailable for this private
+          personal-account repository without GitHub Code Security/GHAS.
+
+          This workflow is passing intentionally for that repository shape.
+          Dependency security remains enforced by the main CI lockfile gates:
+          `pip-audit`, OSV-Scanner, GuardDog, and OpenGrep.
+          MARKDOWN
+
+      - name: Checkout
+        if: ${{ github.event.repository.private != true || github.event.repository.owner.type != 'User' }}
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+
+      - name: Dependency Review
+        if: ${{ github.event.repository.private != true || github.event.repository.owner.type != 'User' }}
+        uses: actions/dependency-review-action@2031cfc080254a8a887f58cffee85186f0e49e48 # v4
+        with:
+          fail-on-severity: moderate

@@ -1,0 +1,65 @@
+# OpenGrep (Semgrep-compatible) secure-coding policy for this project.
+#
+# Generic, language-level rules that apply to most services. Tighten or extend
+# them for your domain (add taint rules, framework-specific checks, etc.).
+# Run via scripts/security/supply-chain-audit.sh or CI; severity ERROR fails the
+# scan when `--error` is passed.
+rules:
+  - id: project.python.subprocess-shell-true
+    languages:
+      - python
+    severity: ERROR
+    message: Avoid shell=True. Use an argv list and absolute executable paths.
+    pattern-either:
+      - pattern: subprocess.run(..., shell=True, ...)
+      - pattern: subprocess.Popen(..., shell=True, ...)
+      - pattern: subprocess.call(..., shell=True, ...)
+      - pattern: subprocess.check_call(..., shell=True, ...)
+      - pattern: subprocess.check_output(..., shell=True, ...)
+
+  - id: project.python.tls-verify-disabled
+    languages:
+      - python
+    severity: ERROR
+    message: Do not disable TLS verification for network clients.
+    pattern-either:
+      - pattern: requests.$FUNC(..., verify=False, ...)
+      - pattern: httpx.$FUNC(..., verify=False, ...)
+      - pattern: httpx.Client(..., verify=False, ...)
+      - pattern: httpx.AsyncClient(..., verify=False, ...)
+
+  - id: project.python.unsafe-yaml-load
+    languages:
+      - python
+    severity: ERROR
+    message: Use yaml.safe_load or an explicit SafeLoader instead of yaml.load.
+    pattern-either:
+      - pattern: yaml.load($DATA)
+      - pattern: yaml.load($DATA, Loader=yaml.Loader)
+      - pattern: yaml.load($DATA, Loader=yaml.FullLoader)
+
+  - id: project.python.dynamic-code-execution
+    languages:
+      - python
+    severity: ERROR
+    message: Avoid eval/exec on dynamic input.
+    pattern-either:
+      - pattern: eval(...)
+      - pattern: exec(...)
+
+  - id: project.javascript.dynamic-code-execution
+    languages:
+      - javascript
+      - typescript
+    severity: ERROR
+    message: Avoid dynamic code execution (eval / new Function).
+    pattern-either:
+      - pattern: eval(...)
+      - pattern: new Function(...)
+
+  - id: project.typescript.dangerous-html-render
+    languages:
+      - typescript
+    severity: ERROR
+    message: Avoid dangerouslySetInnerHTML; render sanitized content instead.
+    pattern: <... dangerouslySetInnerHTML=... ... />

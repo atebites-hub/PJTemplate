@@ -1,0 +1,14 @@
+# Defense-in-depth exclusions for GitNexus code-graph indexing.
+# Keep secrets, build output, logs, virtualenvs, and tool caches out of the
+# knowledge graph that GitNexus builds and exposes to the agent.
+config/secrets/**
+logs/**
+site/**
+dist/**
+build/**
+.venv/**
+.venv-ci/**
+.pytest_cache/**
+.ruff_cache/**
+.gitnexus/**
+gitnexus-*.tgz

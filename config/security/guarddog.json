@@ -1,0 +1,18 @@
+{
+  "ignored_findings": [
+    {
+      "ecosystem": "pypi",
+      "dependency": "ruff",
+      "rule": "bundled_binary",
+      "ignore_until": "2026-12-19",
+      "reason": "Dev-only linter/formatter package intentionally ships a native executable."
+    },
+    {
+      "ecosystem": "pypi",
+      "dependency": "pip",
+      "rule": "bundled_binary",
+      "ignore_until": "2026-12-19",
+      "reason": "Dev-only packaging tool intentionally ships Windows launcher executables."
+    }
+  ]
+}

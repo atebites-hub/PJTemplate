@@ -1,0 +1,10 @@
+# No active OSV ignores.
+#
+# Keep this file so CI and local supply-chain scans can pass --config
+# consistently. Add [[IgnoredVulns]] blocks only with a tracked reason,
+# owner, and expiry, e.g.:
+#
+#   [[IgnoredVulns]]
+#   id = "GHSA-xxxx-xxxx-xxxx"
+#   ignoreUntil = 2026-12-31
+#   reason = "Owner: <name>. Not exploitable because <justification>."

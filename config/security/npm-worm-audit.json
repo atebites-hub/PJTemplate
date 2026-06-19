@@ -1,0 +1,94 @@
+{
+  "blocked_package_patterns": [
+    {
+      "pattern": "^@antv/",
+      "reason": "Mini Shai-Hulud AntV wave affected this npm namespace."
+    },
+    {
+      "pattern": "^@lint-md/",
+      "reason": "Mini Shai-Hulud AntV wave affected this npm namespace."
+    },
+    {
+      "pattern": "^@openclaw-cn/",
+      "reason": "Mini Shai-Hulud AntV wave affected this npm namespace."
+    },
+    {
+      "pattern": "^@starmind/",
+      "reason": "Mini Shai-Hulud AntV wave affected this npm namespace."
+    },
+    {
+      "pattern": "^(echarts-for-react|timeago\\.js|size-sensor|canvas-nest\\.js)$",
+      "reason": "Mini Shai-Hulud AntV wave affected this unscoped package."
+    },
+    {
+      "pattern": "^(@antv/setup|logs-dump|logs-bin)$",
+      "reason": "Known active npm malware marker."
+    }
+  ],
+  "blocked_text_patterns": [
+    {
+      "pattern": "github:antvis/G2#7cb42f57561c321ecb09b4552802ae0ac55b3a7a",
+      "reason": "Known Mini Shai-Hulud exotic dependency marker."
+    },
+    {
+      "pattern": "\"preinstall\"\\s*:\\s*\"bun run index\\.js\"",
+      "reason": "Known Mini Shai-Hulud install-time payload launcher."
+    },
+    {
+      "pattern": "t\\.m-kosche\\.com",
+      "reason": "Known Mini Shai-Hulud network IOC."
+    },
+    {
+      "pattern": "(Shai-Hulud|shai-hulud|dluhu-iahs)",
+      "reason": "Known Mini Shai-Hulud campaign marker."
+    },
+    {
+      "pattern": "(topnotcher847|josemalheiro105|WinKeyServer)",
+      "reason": "Known npm keylogger incident marker."
+    }
+  ],
+  "blocked_dependency_spec_prefixes": [
+    "github:",
+    "git:",
+    "git+",
+    "http:",
+    "https:",
+    "file:"
+  ],
+  "blocked_lifecycle_scripts": [
+    "preinstall",
+    "install",
+    "postinstall",
+    "prepare",
+    "prepack",
+    "postpack"
+  ],
+  "allowed_install_scripts": [
+    {
+      "package": "esbuild",
+      "version": "0.25.12",
+      "reason": "Common Vite/bundler native binary package; only relevant if a frontend is added and installed via npm ci --ignore-scripts in CI."
+    },
+    {
+      "package": "fsevents",
+      "version": "2.3.3",
+      "reason": "macOS optional filesystem watcher dependency; only relevant if a frontend is added and installed via npm ci --ignore-scripts in CI."
+    }
+  ],
+  "persistence_files": [
+    {
+      "path": ".vscode/tasks.json",
+      "allow_missing": true,
+      "allow_empty": true,
+      "allow_non_empty": true,
+      "reason": "Mini Shai-Hulud used VS Code tasks for persistence. This template ships legitimate dev tasks here, so non-empty content is allowed; the IOC text-pattern scan still runs against it."
+    },
+    {
+      "path": ".claude/settings.json",
+      "allow_missing": true,
+      "allow_empty": true,
+      "allow_non_empty": true,
+      "reason": "Mini Shai-Hulud used Claude Code settings for persistence. This template intentionally carries reviewed plugin-enablement config here (via the .claude -> .agents symlink), so non-empty content is allowed; the IOC text-pattern scan still runs against it. Review any change to this file."
+    }
+  ]
+}
