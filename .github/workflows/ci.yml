@@ -41,6 +41,19 @@ jobs:
       - name: Pip sanity
         run: python -m pip check
 
+      # Tier-3 backstop for process artifacts (memory / docs-mirror / reasoning).
+      # Re-runs the same script the git pre-commit hook runs, so a change committed
+      # with --no-verify still fails the PR. The script skips gracefully (exit 0) if
+      # the base ref is unresolvable (first push / shallow clone).
+      - name: Task-compliance gate (process artifacts)
+        run: |
+          if [ -n "${{ github.base_ref }}" ]; then
+            git fetch --quiet origin "${{ github.base_ref }}:refs/remotes/origin/${{ github.base_ref }}" || true
+            scripts/check-task-compliance.sh --range "origin/${{ github.base_ref }}..HEAD"
+          else
+            scripts/check-task-compliance.sh --range "HEAD~1..HEAD"
+          fi
+
       - name: Ruff lint
         run: ruff check .
 

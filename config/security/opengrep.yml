@@ -62,4 +62,7 @@ rules:
       - typescript
     severity: ERROR
     message: Avoid dangerouslySetInnerHTML; render sanitized content instead.
-    pattern: <... dangerouslySetInnerHTML=... ... />
+    # opengrep v1.21.0 has no `tsx` language and rejects JSX element patterns under
+    # `typescript`; match the distinctive React prop by regex (covers .ts/.tsx).
+    patterns:
+      - pattern-regex: dangerouslySetInnerHTML

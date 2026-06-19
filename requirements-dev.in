@@ -5,6 +5,7 @@ hatchling
 ruff
 basedpyright
 pytest
+pytest-cov
 mkdocs
 mkdocstrings[python]
 interrogate

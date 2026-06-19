@@ -23,7 +23,12 @@ Supply-chain hardening is built in (pinned deps, OSV-Scanner, GuardDog, OpenGrep
 
 ## Contributing
 - Reference AGENTS.md for scope.
-- Run tests before PRs.
+- Run the full local gate before PRs: `./scripts/test-suite.sh` (lint, types, tests + coverage).
+- Process artifacts (task memory, `docs/code` mirrors, recorded reasoning) are enforced by
+  `scripts/check-task-compliance.sh` via a git pre-commit hook. `scripts/setup.sh` activates it
+  (`git config core.hooksPath .githooks`); CI re-checks the PR range as a backstop. See
+  `docs/agents/enforcement_matrix.md`.
+- The PR checklist lives in `.github/PULL_REQUEST_TEMPLATE.md`.
 - Update docs/code/tests as per `/docs/agents/documentation_guidelines.md`.
 
 ## License

@@ -36,5 +36,10 @@ Pick the most relevant paths from context (current sprint task, links in **Relat
 
 ## Requirements
 
-- Every sprint task from `docs/agents/Implementation Plan.md` has a matching file under `docs/memories/`.
 - Prefer links to code/docs over long pasted content.
+
+Whether a memory accompanies source changes, and whether its reasoning fields
+(**Context**, **Evaluation**, **Key Challenges & Analysis**) are filled, is **enforced
+by the checker, not by prose**: `scripts/check-task-compliance.sh` (checks C1 and C3)
+runs in the git pre-commit hook and in CI. This skill defines *how* to write a good
+memory; the check verifies the *artifact*. See `docs/agents/enforcement_matrix.md`.

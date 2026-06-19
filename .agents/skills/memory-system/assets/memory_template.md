@@ -14,6 +14,7 @@ Use this template to create a single memory entry per task. Keep entries concise
 - **Rules**: [Constraints, style, security]
 - **Evaluation**: [General instructions for creating tests that can evaluate task completion]
 - **Iteration**: [add todos and update the task memory within the `Memory System` to refine code quality after the task is completed.]
+- **Plan**: [Ordered implementation steps from the reasoning pass; see the `reasoning-system` skill, Step 4]
 
 ## Status
 - state: pending | in_progress | completed | cancelled

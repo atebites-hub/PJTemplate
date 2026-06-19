@@ -36,6 +36,7 @@ dev = [
   "pip-audit",
   "pip-tools",
   "pytest",
+  "pytest-cov",
   "ruff",
 ]
 
@@ -99,10 +100,19 @@ resolver = "backtracking"
 
 [tool.pytest.ini_options]
 minversion = "8.0"
-addopts = "-ra --strict-markers"
+# Coverage is measured but not gated here: the template ships --cov-fail-under=0
+# so the skeleton stays green. Per project, raise the floor to 80 (the line-coverage
+# target documented in docs/agents/testing_guidelines.md).
+addopts = "-ra --strict-markers --cov=src --cov-report=term-missing --cov-fail-under=0"
 testpaths = ["tests"]
 markers = [
   "unit: unit tests",
   "integration: integration tests",
   "e2e: end-to-end tests",
 ]
+
+[tool.coverage.run]
+source = ["src"]
+
+[tool.coverage.report]
+show_missing = true

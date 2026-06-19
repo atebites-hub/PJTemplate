@@ -159,7 +159,10 @@ Assert: verify visible outcome and key backend effect
 ## Quality Gates
 
 ### Coverage requirements
-- Unit tests: minimum [X]% line coverage
+
+This document **owns** the project's line-coverage floor (referenced from `AGENTS.md`; do not restate the number elsewhere).
+
+- Unit tests: minimum **80%** line coverage (template default). The template ships `--cov-fail-under=0` in `pyproject.toml` (measure, don't gate) so the skeleton CI stays green; per project, raise `--cov-fail-under` to 80 and let `./scripts/test-suite.sh` enforce it.
 - Integration tests: all critical boundaries covered
 - E2E tests: critical user journeys covered
 - Security tests: zero high/critical vulnerabilities in changed scope

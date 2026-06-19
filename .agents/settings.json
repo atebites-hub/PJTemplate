@@ -15,5 +15,18 @@
     "compound-engineering@compound-engineering-plugin": true,
     "superpowers@superpowers-marketplace": true,
     "ponytail@ponytail": true
+  },
+  "hooks": {
+    "Stop": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "\"${CLAUDE_PROJECT_DIR}/scripts/check-task-compliance.sh\" --task || exit 2"
+          }
+        ]
+      }
+    ]
   }
 }

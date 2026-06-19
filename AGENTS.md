@@ -13,7 +13,7 @@
 
 Task memory tracking is handled by the `memory-system` skill. See [.agents/skills/memory-system/SKILL.md](.agents/skills/memory-system/SKILL.md) for workflow.
 
-**Requirement**: Every task must have a memory entry. Tasks must be sprint tasks from `docs/agents/Implementation Plan.md`.
+**Requirement**: Sprint tasks live in `docs/agents/implementation_plan.md`. That a task memory accompanies source changes — with its reasoning fields filled — is **enforced** by `scripts/check-task-compliance.sh` (checks C1/C3) via the git pre-commit hook and CI, not by prose. See [`docs/agents/enforcement_matrix.md`](docs/agents/enforcement_matrix.md).
 
 ## Reasoning System
 
@@ -118,18 +118,18 @@ Defense-in-depth, mostly ported from a hardened sibling project. Configs in
 
 1. **Read Current State**: Identify the current sprint and task in `/docs/agents/implementation_plan.md`, then read memories in the `./docs/memories/` folder.
 2. **Reference Documents**: Consult the 10 core documents for requirements, flows, and standards.
-3. **Test Coverage**: Achieve **100% unit test coverage of public functions** (and equivalent public surface: exported functions, public methods, public API entry points—language-dependent). Private helpers and implementation details are out of scope unless your coding standards require otherwise. Run `/scripts/test-suite.sh` before commits.
+3. **Test Coverage**: Meet the line-coverage floor owned by `docs/agents/testing_guidelines.md` (template default: **80%**, measured by `--cov`). Run `./scripts/test-suite.sh` before commits.
 4. **Security Review**: Run security scans (e.g., [tool: cargo-audit for Rust, ESLint-plugin-security for JS]) before completion.
 
 ### Documentation Requirements
 
-**MANDATORY**: Update documentation as you work:
-- **Memory Records**: Persist decisions, lessons, and preferences using the `memory-system` skill (write to `docs/memories/`).
-- **Code Documentation**: For every new/edit/deleted code file (e.g., `renderer.js`), create/update/delete the corresponding `/docs/code/renderer.md` with Mermaid diagram, description, and function breakdowns.
-- **Test Documentation**: Update `/docs/tests/` (e.g., `unit.md`) for new tests, including run commands and edge cases.
+Update documentation as you work. The first two are **enforced** by `scripts/check-task-compliance.sh` (pre-commit + CI), so they are stated here once as pointers, not duplicated mandates:
 
-**CRITICAL**: Ensure these tasks are done before marking your current objective as complete.
-- **Task Completion**: Mark tasks complete in the agent todo system and persist a "Lesson: <topic>" memory; keep `/docs/agents/implementation_plan.md` current by adding additional tasks that were completd to the sprint currently being worked on, and moving tasks that were not completed as well as adding new tasks that emerged to the next sprint. If all tasks for all sprints are complete, create a new sprint and add the new tasks as discovered to it.
+- **Memory Records** (enforced — C1/C3): persist decisions, lessons, and preferences via the `memory-system` skill in `docs/memories/`.
+- **Code Documentation** (enforced — C2): for every changed `src/**` code file (e.g., `renderer.js`), create/update/delete the matching `docs/code/renderer.md` (Mermaid diagram, description, function breakdown — convention owned by `documentation_guidelines.md`).
+- **Test Documentation**: update `docs/tests/` for new tests (run commands, edge cases). *(Not machine-checked — keep current by hand.)*
+
+- **Task Completion**: Mark tasks complete in the agent todo system and persist a "Lesson: <topic>" memory; keep `docs/agents/implementation_plan.md` current by adding completed tasks to the current sprint, moving unfinished tasks plus newly emerged ones to the next sprint. If all sprints are complete, create a new sprint and add the new tasks to it.
 - **Agents**: As project scope changes, review and update all docs in `/docs/agents/` to match.
 
 ## Consultation Requirements
@@ -139,20 +139,22 @@ Defense-in-depth, mostly ported from a hardened sibling project. Configs in
 1. **Working Outside Scope**: Any work not explicitly covered in the 10 reference documents.
 2. **Technology Changes**: Introducing new technologies or libraries.
 3. **Architecture Modifications**: Changing server structure or file organization.
-4. **Sprint Deviations**: Working on tasks outside current sprint in Implementation Plan.md.
+4. **Sprint Deviations**: Working on tasks outside the current sprint in `docs/agents/implementation_plan.md`.
 5. **Security Exceptions**: Any deviation from security requirements.
 6. **Feature Additions**: Adding features not listed in requirements.
 
 ## Quality Gates
 
+**Rule ownership (single source of truth — reference, don't restate):**
+
+- **Coverage floor** → `docs/agents/testing_guidelines.md`.
+- **Security gates** → the **Supply-chain security gates** section above.
+- **Code & docstring standards** → `docs/agents/coding_standards.md` + `documentation_guidelines.md`.
+- **Process artifacts** (task memory, `docs/code` mirror, recorded reasoning) → enforced by `scripts/check-task-compliance.sh`; mechanism in `docs/agents/enforcement_matrix.md`.
+
 ### Before Marking Tasks Complete
 
-1. **Unit Tests**: All tests pass; **100% coverage of public functions** (same definition as in Development Workflow). Run `/scripts/test-suite.sh`.
-2. **Security Scan**: No high/critical vulnerabilities (e.g., [tool: bandit/pip-audit] clean).
-3. **Code Review**: Follow coding standards (docstrings/comments with Description, Preconditions, Postconditions, Parameters, Returns).
-4. **Documentation**: All code documented with proper docstrings; `/docs/code/` and `/docs/tests/` updated.
-5. **Integration**: Works with existing system components.
-6. **Audit Compliance**: Meets security, documentation and coding standards, and testing requirements.
+The single completion checklist is [`.github/PULL_REQUEST_TEMPLATE.md`](.github/PULL_REQUEST_TEMPLATE.md) — do not duplicate it here. That checklist is **documentation**; the hard gate is the pre-commit hook + CI compliance check (`scripts/check-task-compliance.sh`) plus `./scripts/test-suite.sh`.
 
 ## Responsibilities:
 
