@@ -73,11 +73,18 @@ the manual fallback below).
 `/plugin install compound-engineering@compound-engineering-plugin`.
 
 > ⚠️ **Supply-chain note.** These plugins load third-party skills/agents/hooks
-> into the agent (superpowers runs a SessionStart shell hook). They track each
-> marketplace's default branch — **review and pin to a reviewed commit** before
-> relying on them in a sensitive project. `ponytail` is a recently-published
-> repo; vet it before trusting it. Any change to `.claude/settings.json` is
-> watched by the npm-worm/persistence audit (`config/security/npm-worm-audit.json`).
+> into the agent (superpowers runs a SessionStart shell hook). `.agents/settings.json`
+> pins each marketplace `source` to `"ref": "main"`. Note Claude Code's *marketplace*
+> source supports a `ref` (branch/tag) but **not** a commit `sha` — only the author-side
+> *plugin* source inside a `marketplace.json` can pin a `sha` ([plugins reference](https://code.claude.com/docs/en/plugins-reference)). So `ref` records the tracked
+> branch but does not cryptographically freeze a commit; to fully freeze, fork each
+> marketplace and point the source at your (un-synced) fork.
+> **Reviewed marketplace HEADs (2026-06-19):** `EveryInc/compound-engineering-plugin`
+> `c759a26041559360e7b10148dd407406e716fc3b`, `obra/superpowers-marketplace`
+> `6d4bfbc48a3b83723267957731b3a6583ac229e3`, `DietrichGebert/ponytail`
+> `0403c4dd50ee6d0db2c3ec70b2be6655f9cb65a9`. `ponytail` is a recently-published repo;
+> vet it before trusting it. Any change to `.claude/settings.json` is watched by the
+> npm-worm/persistence audit (`config/security/npm-worm-audit.json`).
 
 ### GitNexus (MCP code intelligence)
 
@@ -117,9 +124,10 @@ Defense-in-depth, mostly ported from a hardened sibling project. Configs in
 ### Before Starting Any Work
 
 1. **Read Current State**: Identify the current sprint and task in `/docs/agents/implementation_plan.md`, then read memories in the `./docs/memories/` folder.
-2. **Reference Documents**: Consult the 10 core documents for requirements, flows, and standards.
-3. **Test Coverage**: Meet the line-coverage floor owned by `docs/agents/testing_guidelines.md` (template default: **80%**, measured by `--cov`). Run `./scripts/test-suite.sh` before commits.
-4. **Security Review**: Run security scans (e.g., [tool: cargo-audit for Rust, ESLint-plugin-security for JS]) before completion.
+2. **Execution Policy**: Consult `docs/agents/execution_policy.md` for how work is run (mode/model/loop/delegation). It is a **process** doc — not one of the 10 core documents.
+3. **Reference Documents**: Consult the 10 core documents for requirements, flows, and standards.
+4. **Test Coverage**: Meet the line-coverage floor owned by `docs/agents/testing_guidelines.md` (template default: **80%**, measured by `--cov`). Run `./scripts/test-suite.sh` before commits.
+5. **Security Review**: Run security scans (e.g., [tool: cargo-audit for Rust, ESLint-plugin-security for JS]) before completion.
 
 ### Documentation Requirements
 

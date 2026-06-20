@@ -208,8 +208,9 @@ check_c3() {
     if [[ -n "$out" ]]; then
       while IFS= read -r line; do printf '    - %s\n' "$line"; done <<<"$out"
     fi
-    printf "  Fix: replace the placeholder text under '## Task (TCREI)' (Context, Evaluation\n"
-    printf "  bullets) and the '### Key Challenges & Analysis' section with real content.\n"
+    printf "  Fix: fill the '## Task (TCREI)' Context and Evaluation bullets and the\n"
+    printf "  '### Key Challenges & Analysis' section. Evaluation must name a verifiability\n"
+    printf "  class (verifiable/non-verifiable) and one acceptance gate (Gate: <command|rubric>).\n"
   } >&2
   return 1
 }
