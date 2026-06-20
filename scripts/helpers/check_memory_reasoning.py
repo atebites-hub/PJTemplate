@@ -9,9 +9,14 @@ it onto. Concretely it requires, per memory file:
 * a non-placeholder ``- **Context**:`` bullet under ``## Task (TCREI)`` (the
   retrieval plan), and
 * a non-placeholder ``- **Evaluation**:`` bullet under ``## Task (TCREI)`` (the
-  test/regression plan), and
+  test/regression plan) that also declares a **verifiability class**
+  (``verifiable`` / ``non-verifiable``) and one **acceptance gate** (a ``Gate:``
+  label naming a command/check or a rubric), and
 * a ``### Key Challenges & Analysis`` section with at least one non-placeholder
   sub-bullet (assumptions / counterpoints / alternatives / risks).
+
+The Evaluation checks are deterministic and lenient — presence/structure only.
+They never judge the gate's *quality*; that is the decorrelated review's job.
 
 The structure and placeholder conventions come from
 ``.agents/skills/memory-system/assets/memory_template.md``. ``Context`` and
@@ -49,6 +54,11 @@ _H2_OR_H3_RE = re.compile(r"^#{2,3}\s")
 _KCA_BULLET_RE = re.compile(r"^-\s+[A-Za-z][\w &/-]*:\s*(.*)$")
 # A lone bracketed placeholder occupying the whole field, e.g. "[...]".
 _LONE_BRACKET_RE = re.compile(r"\[[^\]]*\]")
+# Verifiability class declared inside the Evaluation field.
+_CLASS_RE = re.compile(r"(?i)\b(?:non-verifiable|verifiable)\b")
+# Acceptance-gate declaration inside the Evaluation field: a `Gate:` label naming
+# a command/check or a rubric.
+_GATE_RE = re.compile(r"(?i)\bgate:")
 
 
 def is_filled(content: str) -> bool:
@@ -122,6 +132,64 @@ def _find_bullet(block: list[str], label: str) -> str | None:
     return None
 
 
+def _find_bullet_block(block: list[str], label: str) -> str | None:
+    """Return a ``- **<label>**:`` bullet's content including continuation lines.
+
+    Unlike :func:`_find_bullet` (which returns only the label's own line), this
+    captures the bullet body: the text after the label plus every following line
+    until the next ``- **<name>**:`` bullet or a Markdown heading. A multi-line
+    field (e.g. an Evaluation whose ``Gate:`` sits on its own line) is then
+    validated as one unit.
+
+    Args:
+        block: Lines of the Task (TCREI) block to search.
+        label: The bold bullet label to find, e.g. ``"Evaluation"``.
+
+    Returns:
+        The joined bullet body, or ``None`` when the bullet is absent.
+
+    """
+    pattern = re.compile(rf"^-\s+\*\*{re.escape(label)}\*\*:\s*(.*)$")
+    next_bullet = re.compile(r"^-\s+\*\*[^*]+\*\*:")
+    collected: list[str] | None = None
+    for line in block:
+        if collected is None:
+            match = pattern.match(line)
+            if match:
+                collected = [match.group(1)]
+            continue
+        if next_bullet.match(line) or line.startswith("#"):
+            break
+        collected.append(line)
+    return "\n".join(collected) if collected is not None else None
+
+
+def _check_evaluation(block: list[str]) -> list[str]:
+    """Validate the Evaluation field: filled, with a verifiability class and a gate.
+
+    The Evaluation bullet must declare a verifiability class (``verifiable`` or
+    ``non-verifiable``) and exactly one acceptance gate (a ``Gate:`` label naming a
+    command/check or a rubric). This is a presence/structure check only — it never
+    judges the gate's quality (that is the decorrelated review's job).
+
+    Args:
+        block: Lines of the Task (TCREI) block.
+
+    Returns:
+        Problem labels for each missing requirement (empty if all present).
+
+    """
+    body = _find_bullet_block(block, "Evaluation")
+    if body is None or not is_filled(body):
+        return ["Evaluation"]
+    problems: list[str] = []
+    if not _CLASS_RE.search(body):
+        problems.append("Evaluation: verifiability class (verifiable/non-verifiable)")
+    if not _GATE_RE.search(body):
+        problems.append("Evaluation: acceptance gate (Gate:)")
+    return problems
+
+
 def check_memory_text(text: str) -> list[str]:
     """Return the names of required reasoning sections that are missing or empty.
 
@@ -140,10 +208,10 @@ def check_memory_text(text: str) -> list[str]:
     if task_block is None:
         problems.append("'## Task (TCREI)' heading missing")
     else:
-        for label in ("Context", "Evaluation"):
-            content = _find_bullet(task_block, label)
-            if content is None or not is_filled(content):
-                problems.append(label)
+        context = _find_bullet(task_block, "Context")
+        if context is None or not is_filled(context):
+            problems.append("Context")
+        problems.extend(_check_evaluation(task_block))
 
     kca_block = _extract_block(lines, _KCA_HEADING_RE, _H2_OR_H3_RE)
     if kca_block is None:

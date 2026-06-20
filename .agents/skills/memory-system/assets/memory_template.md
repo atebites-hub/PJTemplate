@@ -12,7 +12,7 @@ Use this template to create a single memory entry per task. Keep entries concise
 - **Task**: [What to do]
 - **Context**: [Reference docs/agents/ + relevant code paths]
 - **Rules**: [Constraints, style, security]
-- **Evaluation**: [General instructions for creating tests that can evaluate task completion]
+- **Evaluation**: [Verifiability class (`verifiable` | `non-verifiable`); then exactly one acceptance gate as `Gate: <command/check>` (e.g. `Gate: ./scripts/test-suite.sh`) or `Gate: human review against rubric: <criteria>`; for non-trivial work, the decorrelation method (e.g. `/ce-code-review`, `ultrareview`, or a different effort tier). See the `reasoning-system` skill, thought 5.]
 - **Iteration**: [add todos and update the task memory within the `Memory System` to refine code quality after the task is completed.]
 - **Plan**: [Ordered implementation steps from the reasoning pass; see the `reasoning-system` skill, Step 4]
 

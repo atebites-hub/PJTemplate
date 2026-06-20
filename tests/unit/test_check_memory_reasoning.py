@@ -23,7 +23,7 @@ _VALID_MEMORY = """\
 - **Task**: Build the thing
 - **Context**: Read docs/agents/testing_guidelines.md and src/server/runtime/main.py
 - **Rules**: Keep it DRY
-- **Evaluation**: Add a unit test asserting the parser rejects placeholders
+- **Evaluation**: verifiable. Gate: ./scripts/test-suite.sh (the new unit tests pass)
 - **Iteration**: refine later
 - **Plan**: step one, step two
 
@@ -83,10 +83,54 @@ def test_template_placeholders_flag_all_sections() -> None:
 def test_only_evaluation_empty() -> None:
     """Only the emptied Evaluation bullet is reported."""
     text = _VALID_MEMORY.replace(
-        "- **Evaluation**: Add a unit test asserting the parser rejects placeholders",
+        "- **Evaluation**: verifiable. Gate: ./scripts/test-suite.sh (the new unit tests pass)",
         "- **Evaluation**: [...]",
     )
     assert cmr.check_memory_text(text) == ["Evaluation"]
+
+
+@pytest.mark.unit
+def test_evaluation_missing_class() -> None:
+    """An Evaluation with a gate but no verifiability class is flagged."""
+    text = _VALID_MEMORY.replace(
+        "- **Evaluation**: verifiable. Gate: ./scripts/test-suite.sh (the new unit tests pass)",
+        "- **Evaluation**: Gate: ./scripts/test-suite.sh",
+    )
+    problems = cmr.check_memory_text(text)
+    assert "Evaluation: verifiability class (verifiable/non-verifiable)" in problems
+    assert "Evaluation: acceptance gate (Gate:)" not in problems
+
+
+@pytest.mark.unit
+def test_evaluation_missing_gate() -> None:
+    """An Evaluation with a class but no Gate is flagged."""
+    text = _VALID_MEMORY.replace(
+        "- **Evaluation**: verifiable. Gate: ./scripts/test-suite.sh (the new unit tests pass)",
+        "- **Evaluation**: verifiable; the tests should pass",
+    )
+    problems = cmr.check_memory_text(text)
+    assert "Evaluation: acceptance gate (Gate:)" in problems
+    assert "Evaluation: verifiability class (verifiable/non-verifiable)" not in problems
+
+
+@pytest.mark.unit
+def test_evaluation_non_verifiable_with_rubric_passes() -> None:
+    """A non-verifiable task with a rubric Gate satisfies the Evaluation check."""
+    text = _VALID_MEMORY.replace(
+        "- **Evaluation**: verifiable. Gate: ./scripts/test-suite.sh (the new unit tests pass)",
+        "- **Evaluation**: non-verifiable. Gate: human review against rubric: clarity, tone",
+    )
+    assert cmr.check_memory_text(text) == []
+
+
+@pytest.mark.unit
+def test_evaluation_multiline_gate_passes() -> None:
+    """A Gate on a continuation line under Evaluation is captured and passes."""
+    text = _VALID_MEMORY.replace(
+        "- **Evaluation**: verifiable. Gate: ./scripts/test-suite.sh (the new unit tests pass)",
+        "- **Evaluation**: verifiable.\n  Gate: ./scripts/test-suite.sh",
+    )
+    assert cmr.check_memory_text(text) == []
 
 
 @pytest.mark.unit

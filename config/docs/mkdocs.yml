@@ -28,7 +28,9 @@ nav:
       - Server structure: agents/server_structure_template.md
       - Technology stack: agents/technology_stack_template.md
       - Testing guidelines: agents/testing_guidelines_template.md
+  - Process docs:
       - Enforcement matrix: agents/enforcement_matrix.md
+      - Execution policy: agents/execution_policy.md
   - Code documentation:
       - server/config/constants: code/server/config/constants.md
       - server/config/settings: code/server/config/settings.md

@@ -58,7 +58,7 @@ Optional parameters on the tool (e.g. revision or branching) may be used when yo
 | 2 | **Retrieval** — Which core docs, task memory entries, and codebase areas (files, symbols, prior art) you must read or search before design; what stays unknown until retrieved |
 | 3 | **Design** — Patterns, boundaries, file locations, alternatives (grounded in retrieved context) |
 | 4 | **Implementation** — Ordered steps, touchpoints, migration or rollback notes if relevant |
-| 5 | **Testing and decision** — Test levels (unit, integration, E2E per `Testing Guidelines.md`), regression risks (refactors, concurrency, feature flags), mapping **risks and edge cases to specific tests or verification steps**, counterpoints, **final approach** |
+| 5 | **Testing and decision** — Test levels (unit, integration, E2E per `Testing Guidelines.md`), regression risks (refactors, concurrency, feature flags), mapping **risks and edge cases to specific tests or verification steps**, counterpoints, **final approach**. Then the **verifiable-gate** questions: classify the task **verifiable** (a machine check can decide "done") or **non-verifiable** (needs human judgment/taste); where fuzzy, convert "make it good" into a concrete check (this conversion is the bulk of the work); name **exactly one acceptance gate** — a command/check (e.g. `./scripts/test-suite.sh`, a specific test, a benchmark threshold) or, for non-verifiable work, "human review against rubric: \<criteria>"; and for **non-trivial** changes, state that the gate is **decorrelated from the builder** (fresh-context judge / `/ce-code-review` / `ultrareview` / a different effort tier — see `execution_policy.md`) |
 
 Use `nextThoughtNeeded: true` for extra thoughts if you need more refinement after thought 5.
 
@@ -73,6 +73,7 @@ skill), mapped onto existing fields so there is **one home, not a parallel recor
 |------------------|--------------------------------------------|
 | **Retrieval plan** — docs, memory, code paths you consulted or will consult | `- **Context**:` under `## Task (TCREI)` |
 | **Test and regression plan** — what must not break; how tests/checks lock it in | `- **Evaluation**:` under `## Task (TCREI)` |
+| **Verifiability class + named acceptance gate** (`Gate:` command/check or rubric) | `- **Evaluation**:` under `## Task (TCREI)` (same bullet as the test plan) |
 | Assumptions, counterpoints, alternatives, risks | `### Key Challenges & Analysis` |
 | Ordered implementation steps; files to create/modify | `- **Plan**:` under `## Task (TCREI)` |
 | Non-obvious insights, docs to update | `### Learnings` |
@@ -92,6 +93,7 @@ Before proceeding to code:
 - [ ] Relevant core documents referenced
 - [ ] Implementation approach documented
 - [ ] Tests and regressions tied to risks and edge cases
+- [ ] Task classified verifiable/non-verifiable; exactly one acceptance gate named; decorrelated review specified for non-trivial work
 - [ ] File locations align with `File Structure Doc.md`
 - [ ] Code style aligns with `Coding Standards.md`
 
