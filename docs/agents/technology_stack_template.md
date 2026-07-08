@@ -22,3 +22,16 @@ This document lists the technologies, packages, dependencies, APIs, and tools fo
 
 ## Development Tools
 [Table: e.g., | npm | Package management | [Docs](link) | Installation: With Node.js. Assumptions: [e.g., "v18+"]; Known Issues: [e.g., "Lockfile conflicts"].]
+
+### Optional: Jupyter notebooks (dev exploration)
+
+| Package | Purpose | Docs |
+|---------|---------|------|
+| JupyterLab | Browser UI for dev notebooks under `notebooks/` | [jupyter.org](https://jupyter.org/) |
+| ipykernel | Project `.venv` kernel for notebooks | [ipykernel](https://ipython.readthedocs.io/en/stable/) |
+| httpx | Fetch external or local API data in notebooks | [python-httpx.org](https://www.python-httpx.org/) |
+| nbstripout | Strip notebook outputs on git commit | [nbstripout](https://github.com/kynan/nbstripout) |
+
+Installation: `./scripts/setup.sh --with-notebooks` (lockfile: `requirements-notebooks.in`).
+Launch: `./scripts/notebook.sh`. **Not** installed in the production Docker image.
+See `notebooks/README.md` and `docs/tests/notebooks.md`.

@@ -1,0 +1,11 @@
+# Dev-only notebook stack. Compile with:
+#   pip-compile --generate-hashes --resolver=backtracking \
+#     -o requirements-notebooks.txt requirements-notebooks.in
+#
+# Install after the base dev environment (see scripts/setup.sh --with-notebooks).
+-c requirements.txt
+
+httpx
+ipykernel
+jupyterlab
+nbstripout

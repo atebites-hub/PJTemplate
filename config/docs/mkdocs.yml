@@ -31,6 +31,8 @@ nav:
   - Process docs:
       - Enforcement matrix: agents/enforcement_matrix.md
       - Execution policy: agents/execution_policy.md
+  - Test docs:
+      - Dev notebooks: tests/notebooks.md
   - Code documentation:
       - server/config/constants: code/server/config/constants.md
       - server/config/settings: code/server/config/settings.md

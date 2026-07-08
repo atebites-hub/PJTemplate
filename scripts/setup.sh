@@ -1,6 +1,22 @@
 #!/usr/bin/env bash
 set -Eeuo pipefail
 
+WITH_NOTEBOOKS=false
+for arg in "$@"; do
+  case "$arg" in
+    --with-notebooks) WITH_NOTEBOOKS=true ;;
+    -h | --help)
+      cat <<'EOF'
+Usage: scripts/setup.sh [--with-notebooks]
+
+  --with-notebooks  Also compile/install dev notebook deps (JupyterLab, httpx,
+                    nbstripout) and register the project ipykernel.
+EOF
+      exit 0
+      ;;
+  esac
+done
+
 PYTHON_VERSION="${PYTHON_VERSION:-3.12.12}"
 PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 PYENV_ROOT="${PYENV_ROOT:-$HOME/.pyenv}"
@@ -130,11 +146,24 @@ python -m pip install --require-hashes -r requirements-dev.txt
 echo "==> Installing the project itself"
 python -m pip install -e . --no-deps
 
+if [[ "$WITH_NOTEBOOKS" == true ]]; then
+  echo "==> Compiling pinned+hashed notebook requirements"
+  python -m piptools compile --generate-hashes --resolver=backtracking \
+    -o requirements-notebooks.txt requirements-notebooks.in
+
+  echo "==> Installing notebook environment from hashed lockfile"
+  python -m pip install --require-hashes -r requirements-notebooks.txt
+
+  echo "==> Registering Jupyter kernel and nbstripout git filter"
+  python -m ipykernel install --user --name yourapp --display-name "yourapp (.venv)"
+  nbstripout --install --attributes notebooks/.gitattributes
+fi
+
 echo "==> Sanity checks"
 python -m pip check
 python -m pip list
 
-cat <<'EOF'
+cat <<EOF
 
 Bootstrap complete.
 
@@ -152,6 +181,7 @@ Common commands:
   interrogate -c pyproject.toml
   mkdocs build -f config/docs/mkdocs.yml --strict
   pytest
+$( [[ "$WITH_NOTEBOOKS" == true ]] && printf '  ./scripts/notebook.sh           # JupyterLab on :8888 (dev only)\n' )
 
 Git hooks are active (core.hooksPath=.githooks): commits run the compliance gate.
 

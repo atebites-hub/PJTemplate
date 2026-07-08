@@ -4,10 +4,23 @@
 
 ## Quick Start
 1. Clone the repo: `git clone [repo-url]`.
-2. Install dependencies: Run `/scripts/setup.sh` (or `npm install` for JS, `pip install -r requirements.txt` for Python).
-3. Set up environment: Copy `.env.example` to `.env` and fill in values.
-4. Launch dev mode: `./scripts/run-dev.sh`.
+2. Install dependencies: `./scripts/setup.sh` (add `--with-notebooks` for optional Jupyter dev exploration).
+3. Set up secrets: add files under `config/secrets/` as needed (see `config/secrets/README.MD`).
+4. Launch dev mode: `./scripts/start.sh` (or `uvicorn server.runtime.main:app --reload`).
 5. Run tests: `./scripts/test-suite.sh`.
+
+### Dev notebooks (optional)
+
+For fetching data, testing transforms, and prototyping before promoting logic into
+`src/server/`:
+
+```bash
+./scripts/setup.sh --with-notebooks
+./scripts/notebook.sh          # JupyterLab at http://127.0.0.1:8888/
+```
+
+See `notebooks/README.md` and `docs/tests/notebooks.md`. Notebook deps live in
+`requirements-notebooks.in` and are **not** installed in the production Docker image.
 
 ## Project Structure
 Follow the layout in `/docs/agents/file_structure_doc.md` for modularity.

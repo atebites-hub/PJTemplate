@@ -39,6 +39,12 @@ dev = [
   "pytest-cov",
   "ruff",
 ]
+notebooks = [
+  "httpx",
+  "ipykernel",
+  "jupyterlab",
+  "nbstripout",
+]
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/server"]
@@ -56,6 +62,7 @@ exclude = [
 target-version = "py312"
 line-length = 100
 src = ["src", "tests"]
+extend-exclude = ["notebooks/**/*.ipynb"]
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "B", "UP", "D"]

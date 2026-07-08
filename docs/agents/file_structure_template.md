@@ -34,11 +34,18 @@ root/
 │       ├── middleware/      # Express middleware (if applicable)
 │       ├── services/        # Business logic services
 │       └── utils/           # Server-side utilities
+├── notebooks/               # Dev-only Jupyter exploration (optional install)
+│   ├── _bootstrap.py       # Shared paths + settings for notebooks
+│   ├── explore/            # Scratch notebooks
+│   ├── examples/           # Reference notebooks
+│   └── data/               # Local datasets (gitignored except .gitkeep)
 ├── scripts/                  # Build and deployment scripts
-│   ├── setup.sh            # Initial project setup
+│   ├── setup.sh            # Initial project setup (--with-notebooks optional)
+│   ├── notebook.sh         # Launch JupyterLab (dev only)
 │   ├── test-suite.sh       # Run all tests
 │   ├── build.sh            # Build for production
 │   └── deploy.sh           # Deployment script
+├── requirements-notebooks.in  # Optional dev notebook deps (separate lockfile)
 ├── tests/                   # Test suites
 │   ├── unit/               # Unit tests
 │   ├── integration/        # Integration tests
@@ -49,6 +56,7 @@ root/
     ├── agents/            # AI agent context documents
     ├── code/              # Code documentation
     ├── tests/             # Test documentation
+    │   └── notebooks.md   # Dev notebook workflow (optional)
     └── api/               # API documentation (if applicable)
 ```
 

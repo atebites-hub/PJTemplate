@@ -33,6 +33,11 @@ __pycache__/
 .pytest_cache/
 .venv-ci/
 
+# Jupyter (dev notebooks)
+.ipynb_checkpoints/
+notebooks/data/**
+!notebooks/data/**/.gitkeep
+
 # General
 *.tmp
 *.bak

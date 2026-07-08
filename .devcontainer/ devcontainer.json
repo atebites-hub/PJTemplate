@@ -5,7 +5,7 @@
       "context": ".."
     },
     "workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}",
-    "forwardPorts": [8080],
+    "forwardPorts": [8080, 8888],
     "init": true,
     "mounts": [
       "source=${localWorkspaceFolder}/config/secrets,target=/run/secrets,type=bind,consistency=cached"
@@ -18,6 +18,7 @@
       "vscode": {
         "extensions": [
           "ms-python.python",
+          "ms-toolsai.jupyter",
           "charliermarsh.ruff",
           "detachhead.basedpyright"
         ],
