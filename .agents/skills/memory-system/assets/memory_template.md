@@ -10,6 +10,7 @@ Use this template to create a single memory entry per task. Keep entries concise
 
 ## Task (TCREI)
 - **Task**: [What to do]
+- **Scope**: inline | dynamic-workflows — set during planning after harness plan mode; default inline; use dynamic-workflows for multi-module, high-stakes, or large builds (see dynamic-workflows skill)
 - **Context**: [Reference docs/agents/ + relevant code paths]
 - **Rules**: [Constraints, style, security]
 - **Evaluation**: [Verifiability class (`verifiable` | `non-verifiable`); then exactly one acceptance gate as `Gate: <command/check>` (e.g. `Gate: ./scripts/test-suite.sh`) or `Gate: human review against rubric: <criteria>`; for non-trivial work, the decorrelation method (e.g. `/ce-code-review`, `ultrareview`, or a different effort tier). See the `reasoning-system` skill, thought 5.]

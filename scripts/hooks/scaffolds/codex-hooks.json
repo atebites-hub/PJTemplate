@@ -1,0 +1,28 @@
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "startup|resume|clear|compact",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "PJ_HOOK_FORMAT=codex bash \"$(git rev-parse --show-toplevel)/scripts/hooks/session-workflow-checklist.sh\"",
+            "timeout": 10,
+            "statusMessage": "Loading PJTemplate workflow checklist..."
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"$(git rev-parse --show-toplevel)/scripts/check-task-compliance.sh\" --task",
+            "timeout": 60
+          }
+        ]
+      }
+    ]
+  }
+}

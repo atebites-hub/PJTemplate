@@ -1,0 +1,17 @@
+{
+  "version": 1,
+  "hooks": {
+    "sessionStart": [
+      {
+        "command": "bash .cursor/hooks/session-workflow.sh",
+        "timeout": 10
+      }
+    ],
+    "stop": [
+      {
+        "command": "bash .cursor/hooks/task-compliance-stop.sh",
+        "timeout": 60
+      }
+    ]
+  }
+}

@@ -1,0 +1,27 @@
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "startup|resume|clear|compact",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "PJ_HOOK_FORMAT=claude bash \"$FACTORY_PROJECT_DIR/scripts/hooks/session-workflow-checklist.sh\"",
+            "timeout": 10
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"$FACTORY_PROJECT_DIR/scripts/check-task-compliance.sh\" --task",
+            "timeout": 60
+          }
+        ]
+      }
+    ]
+  }
+}

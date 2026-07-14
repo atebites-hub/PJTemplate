@@ -1,0 +1,18 @@
+{
+  "_comment": "Gemini CLI has no SessionStart. Merge hooks into .gemini/settings.json. stdout must be JSON-only on every hook.",
+  "hooks": {
+    "AfterAgent": [
+      {
+        "hooks": [
+          {
+            "name": "pjtemplate-workflow-reminder",
+            "type": "command",
+            "command": "$GEMINI_PROJECT_DIR/scripts/hooks/gemini-after-agent-reminder.sh",
+            "timeout": 10000,
+            "description": "Advisory checklist after each agent loop (non-blocking)."
+          }
+        ]
+      }
+    ]
+  }
+}

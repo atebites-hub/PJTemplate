@@ -1,0 +1,12 @@
+{
+  "_comment": "Windsurf Cascade: no SessionStart. post_cascade_response is async and cannot block. Authoritative compliance remains git pre-commit + CI.",
+  "hooks": {
+    "post_cascade_response": [
+      {
+        "command": "python3 -c \"import json,sys; json.dump(json.load(sys.stdin), open('/tmp/pjtemplate-cascade-audit.jsonl','a')); open('/tmp/pjtemplate-cascade-audit.jsonl','a').write(chr(10))\"",
+        "show_output": false,
+        "description": "Example audit log only — replace path and logic for your environment."
+      }
+    ]
+  }
+}

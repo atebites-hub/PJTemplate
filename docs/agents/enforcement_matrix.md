@@ -18,7 +18,7 @@ The tables below document the current capabilities that justify this split.
 
 | Harness | Lifecycle events available | Can run shell command? | Config location | Tier-2 adapter feasible? | Source |
 | --- | --- | --- | --- | --- | --- |
-| **Claude Code** | `PreToolUse`, `PostToolUse`, `Stop`, `SubagentStop`, `SessionStart`, `SessionEnd`, `UserPromptSubmit`, `Notification`, `PreCompact`, and more. `Stop` fires "when Claude finishes responding." | **Yes** — `"type": "command"` handler runs a shell command/executable via stdin-JSON; supports `${CLAUDE_PROJECT_DIR}`. Exit code **2** = blocking error, stderr is fed back to the model; exit 0 parses stdout JSON; other codes are non-blocking. | `.claude/settings.json` (project, committable), `.claude/settings.local.json` (gitignored), `~/.claude/settings.json` (user), plugin `hooks/hooks.json`. | **Yes — shipped.** `Stop` hook → `scripts/check-task-compliance.sh --task`. | [code.claude.com/docs/en/hooks](https://code.claude.com/docs/en/hooks), [hooks-guide](https://code.claude.com/docs/en/hooks-guide) |
+| **Claude Code** | `PreToolUse`, `PostToolUse`, `Stop`, `SubagentStop`, `SessionStart`, `SessionEnd`, `UserPromptSubmit`, `Notification`, `PreCompact`, and more. `Stop` fires "when Claude finishes responding." `SessionStart` (matcher `startup\|resume\|clear\|compact`) reinjects workflow context after compact. | **Yes** — `"type": "command"` handler runs a shell command/executable via stdin-JSON; supports `${CLAUDE_PROJECT_DIR}`. Exit code **2** = blocking error, stderr is fed back to the model; exit 0 parses stdout JSON; other codes are non-blocking. | `.claude/settings.json` (project, committable), `.claude/settings.local.json` (gitignored), `~/.claude/settings.json` (user), plugin `hooks/hooks.json`. | **Yes — shipped.** `SessionStart` → `scripts/hooks/session-workflow-checklist.sh` (workflow nudge; non-blocking). `Stop` → `scripts/check-task-compliance.sh --task`. | [code.claude.com/docs/en/hooks](https://code.claude.com/docs/en/hooks), [hooks-guide](https://code.claude.com/docs/en/hooks-guide) |
 | **Cursor** (>= 1.7) | `sessionStart`, `sessionEnd`, `preToolUse`, `postToolUse`, `subagentStart`, `subagentStop`, `beforeShellExecution`, `afterFileEdit`, `beforeSubmitPrompt`, `preCompact`, `stop`, `afterAgentResponse`, and more. `stop` fires "when the agent loop ends." | **Yes** — hooks are "spawned processes that communicate over stdio using JSON in both directions" (bash, Python, TS/Bun, any executable). | `<project-root>/.cursor/hooks.json` (committable, loads "for all team members in trusted workspaces") and `~/.cursor/hooks.json` (global). | **Yes** — `stop` hook → `--task`. (Not shipped; optional.) | [cursor.com/docs/hooks](https://cursor.com/docs/hooks), [InfoQ](https://www.infoq.com/news/2025/10/cursor-hooks/) |
 | **Codex CLI** (OpenAI) | `SessionStart`, `SubagentStart`, `SubagentStop`, `PreToolUse`, `PostToolUse`, `PreCompact`, `PostCompact`, `UserPromptSubmit`, `Stop`. `Stop` fires "when a conversation turn stops" and can return `"decision": "block"` to continue. | **Yes** — only `type: "command"` handlers run today (prompt/agent handlers are parsed and skipped). Commands run with the session `cwd`; `timeout` default 600s. | `~/.codex/hooks.json` or `~/.codex/config.toml`; repo-level `<repo>/.codex/hooks.json` or `<repo>/.codex/config.toml`. | **Yes** — `Stop` hook → `--task`. (Not shipped; optional.) | [developers.openai.com/codex/hooks](https://developers.openai.com/codex/hooks), [config-advanced](https://developers.openai.com/codex/config-advanced) |
 | **Droid / Factory CLI** | `PreToolUse`, `PostToolUse`, `UserPromptSubmit`, `Notification`, `Stop`, `SubagentStop`, `PreCompact`, `SessionStart`, `SessionEnd`. `Stop` fires "when Droid finishes responding." | **Yes** — "user-defined shell commands that execute at various points in Droid's lifecycle." Exit code 2 blocks (e.g. file-protection example `sys.exit(2 ...)`). | `~/.factory/hooks.json` (user) and project-level `.factory/` config. | **Yes** — `Stop` hook → `--task`. (Not shipped; optional.) | [docs.factory.ai/cli/configuration/hooks-guide](https://docs.factory.ai/cli/configuration/hooks-guide) |
@@ -51,11 +51,24 @@ The matrix confirms the three-tier split:
 
   with `.githooks/pre-commit` calling `scripts/check-task-compliance.sh --staged`.
 
-- **Tier 2 — per-harness adapters are optional accelerators.** They give the agent in-loop feedback *before* it reaches `git commit`, but they are non-authoritative (each harness has its own schema, and several have none). **Claude Code's `Stop` hook is the one adapter shipped**, because Claude Code is the canonical harness for this template and exit code 2 feeds stderr straight back to the model. Configured in `.agents/settings.json` (read by Claude Code via the `.claude` symlink):
+- **Tier 2 — per-harness adapters are optional accelerators.** They give the agent in-loop feedback *before* it reaches `git commit`, but they are non-authoritative (each harness has its own schema, and several have none). **Claude Code ships two adapters** in `.agents/settings.json` (read via the `.claude` symlink):
+  - **`SessionStart`** (matcher `startup|resume|clear|compact`) → `scripts/hooks/session-workflow-checklist.sh` reinjects the memory/reasoning/dynamic-workflows checklist after compact (Ponytail-style context injection; non-blocking).
+  - **`Stop`** → `scripts/check-task-compliance.sh --task` (exit code 2 feeds stderr back to the model).
 
   ```json
   {
     "hooks": {
+      "SessionStart": [
+        {
+          "matcher": "startup|resume|clear|compact",
+          "hooks": [
+            {
+              "type": "command",
+              "command": "${CLAUDE_PROJECT_DIR}/scripts/hooks/session-workflow-checklist.sh"
+            }
+          ]
+        }
+      ],
       "Stop": [
         {
           "matcher": "",
@@ -71,7 +84,9 @@ The matrix confirms the three-tier split:
   }
   ```
 
-  Cursor (`stop`), Codex (`Stop`), and Droid (`Stop`) expose equivalent completion events and could be wired the same way (`--task`) if a team standardizes on them — but they remain optional and must be verified against current docs first.
+  **Also shipped (project hooks):** Cursor — `.cursor/hooks.json` (`sessionStart` + `stop`); GitHub Copilot CLI — `.github/hooks/session-workflow.json` (`sessionStart` + `agentStop`). Copy-paste scaffolds for Codex, Grok, Gemini, Droid, Windsurf live under `scripts/hooks/scaffolds/`.
+
+  Other harnesses (`stop` / `Stop` / `agentStop`) expose equivalent completion events and can use the same `--task` script — see scaffolds README — but remain optional until verified against current docs.
 
 - **Tier 3 — CI is the non-bypassable backstop.** Because every client-side hook is skippable with `git commit --no-verify`, the merge gate must live server-side. CI re-runs the same script over the PR commit range, and branch protection blocks the merge on failure:
 
