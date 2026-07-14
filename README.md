@@ -27,6 +27,7 @@ Follow the layout in `/docs/agents/file_structure_doc.md` for modularity.
 
 ## Key Documents
 - **AGENTS.md**: Rules for AI agents (e.g., Cursor, Claude). `CLAUDE.md` and `.claude/` are symlinks to `AGENTS.md` / `.agents/`, so there is one source of truth.
+- **Dynamic Workflows** (`/dynamic-workflows`): Harness-agnostic multi-agent playbook for large or high-risk builds (Grok, Cursor, Codex, Claude) — `.agents/skills/dynamic-workflows/SKILL.md`.
 - **Agent Tooling & Integrations** (in AGENTS.md): auto-enabled Claude plugins (compound-engineering, superpowers, ponytail), the GitNexus MCP code-intelligence server, and the cross-tool skill/symlink model.
 - **Memory System**: Tasks and progress via per-task memories and agent todos.
 - **Implementation Plan**: Sprint roadmap in `/docs/agents/implementation_plan.md`.

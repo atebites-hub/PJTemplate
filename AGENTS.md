@@ -21,6 +21,18 @@ Structured reasoning before implementation is handled by the `reasoning-system` 
 
 **Requirement**: Use the `reasoning-system` skill before implementing features, refactoring, or making architectural decisions. Invoke after planning but before editing code. The pass must cover retrieval (docs, task memory, code to read) and testing/regression strategy, not only design.
 
+## Dynamic Workflows
+
+Large, high-risk, or multi-module builds use the harness-agnostic `dynamic-workflows`
+skill — [.agents/skills/dynamic-workflows/SKILL.md](.agents/skills/dynamic-workflows/SKILL.md)
+(works across Grok, Cursor, Codex, Claude). Invoke as `/dynamic-workflows` or by
+name when one agent cannot safely self-report at merge time.
+
+**This repo's gate bindings:** [.agents/skills/dynamic-workflows/references/pjtemplate-bindings.example.md](.agents/skills/dynamic-workflows/references/pjtemplate-bindings.example.md).
+
+**Pattern**: worktree → recon spec → staged TDD → 6-lens review → refute panels →
+fix/gate loop → docs lane → orchestrator verify → **simplify before push** → PR.
+
 ## Agent Tooling & Integrations
 
 This template is **tool-agnostic by default and Claude-ready by symlink**. The
@@ -41,7 +53,7 @@ them through committed symlinks.
 - **Skills** live in `.agents/skills/<name>/SKILL.md` (Agent Skills standard:
   `name` + `description` frontmatter). Claude discovers them at
   `.claude/skills/` (via the symlink); Codex reads `.agents/skills/` directly.
-  Current skills: `memory-system`, `reasoning-system`.
+  Current skills: `memory-system`, `reasoning-system`, `dynamic-workflows`.
 
 ### Claude Code plugins (auto-enabled)
 
