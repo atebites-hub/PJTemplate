@@ -38,7 +38,8 @@ each leaf out to a named CLI executor.
 
 **Invoke:** skill `open-dynamic-workflows` / `/open-dynamic-workflows`, then write a
 script and run `./scripts/odw run <script.js>`. Every `agent()` **must** set
-`{ executor: '…' }` to a name in the host registry (bundled: `claude`, `codex`).
+`{ executor: '…' }` to a name in the host registry (bundled: `claude`, `codex`,
+`grok`, `cursor`).
 
 **When:** dozens–hundreds of agents, rerunnable orchestration, or quality patterns
 that need independent seats (audits, large migrations, multi-angle plans). **Not**

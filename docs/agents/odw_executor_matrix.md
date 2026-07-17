@@ -18,6 +18,8 @@ Bundled in `vendor/open-dynamic-workflows` (via `builtinExecutors`):
 | --- | --- | --- |
 | `claude` | `claude --print --output-format=stream-json --verbose --permission-mode acceptEdits` | Prompt on stdin; stream-json reducer |
 | `codex` | `codex exec --json --skip-git-repo-check --color never --sandbox workspace-write -` | Prompt on stdin (`-`); JSONL reducer |
+| `grok` | `grok --output-format streaming-json --permission-mode acceptEdits --cwd <cwd> --prompt-file <tmp>` | Grok Build headless; optional `--json-schema`; never `bypassPermissions` |
+| `cursor` | `cursor-agent --print --output-format stream-json --force --workspace <cwd> <prompt>` | Command is **`cursor-agent`** (not bare `agent`, which may be Grok’s shim). No native schema flag — schema → prompt instruct + JSON.parse |
 
 New harnesses = new adapter under `executor/<name>/` using `makeSubprocessExecutor`
 (or a pure-function/SDK executor). **Do not** fork ODW in-tree for adapters unless
@@ -38,8 +40,8 @@ Status legend:
 | --- | --- | --- | --- | --- |
 | **Claude Code** | Symlinks + plugins + SessionStart/Stop | `claude -p` / `--print` + stream-json | **Bundled (`claude`)** | Reference adapter. Never use `--dangerously-skip-permissions`. |
 | **OpenAI Codex CLI** | Hook scaffold (`.codex`) | `codex exec --json` | **Bundled (`codex`)** | Reference adapter. Sandbox `workspace-write`, not full bypass. |
-| **Cursor Agent CLI** | `.cursor/hooks.json` | `agent -p` / `--print` (`--output-format text\|json\|stream-json`) | **Headless-ready** | Strong candidate for next bundled executor (`cursor` / `agent`). Auth via API key / login. |
-| **Grok Build** | Hook scaffold | `grok -p` / `--single` + `--output-format plain\|json\|streaming-json`; optional `--json-schema` | **Headless-ready** | Excellent ODW fit (schema + streaming-json). Candidate name: `grok`. |
+| **Cursor Agent CLI** | `.cursor/hooks.json` | `cursor-agent -p` / `--print` (`--output-format text\|json\|stream-json`) | **Bundled (`cursor`)** | Uses `cursor-agent` binary. Auth: `cursor-agent login` or `CURSOR_API_KEY`. |
+| **Grok Build** | Hook scaffold | `grok` + `--prompt-file` / `-p` + `streaming-json`; optional `--json-schema` | **Bundled (`grok`)** | Permission mode `acceptEdits` only. |
 | **Factory Droid** | Hook scaffold | `droid exec` (`-o` format, `--auto`, `--cwd`, worktree) | **Headless-ready** | Built for CI/script; default read-only until `--auto`. Candidate: `droid`. |
 | **Gemini CLI** | `.gemini/settings.json` | `gemini -p` / headless docs | **Headless-ready (legacy path)** | Google is migrating terminal experience to **Antigravity CLI**; prefer `agy`/`antigravity` for new adapters. |
 | **Google Antigravity** | Mentioned in enforcement matrix (hooks unstable) | CLI + SDK documented; `agy -p` cited in codelabs/community | **Partial / verify install** | Desktop `agy` on some machines is only an app launcher symlink — install **Antigravity CLI** separately before writing an adapter. SDK is Python (`google-antigravity`). |
@@ -56,11 +58,12 @@ Status legend:
 1. **Authoring** can happen in any harness that reads `.agents/skills/open-dynamic-workflows`
    (Claude, Codex, Cursor, Grok, …).
 2. **Running** requires Node ≥20 + built vendor CLI (`./scripts/odw`) and at least one
-   installed leaf CLI named in the script (`claude` and/or `codex` out of the box).
-3. **Mixed nodes** are first-class: e.g. draft with `{executor:'claude'}`, review with
-   `{executor:'codex'}`.
-4. **Adding a harness** (e.g. Grok/Cursor): implement adapter → register under a stable
-   name → document here → prefer upstream PR so `builtinExecutors` stays the registry.
+   installed leaf CLI named in the script (`claude` / `codex` / `grok` / `cursor`).
+3. **Mixed nodes** are first-class: e.g. draft with `{executor:'grok'}`, review with
+   `{executor:'cursor'}` or `{executor:'codex'}`.
+4. **Adding a harness**: implement adapter under `vendor/open-dynamic-workflows/src/executor/<name>/`
+   → register in `builtinExecutors` → document here → prefer upstream PR to
+   [imsai-sh/open-dynamic-workflows](https://github.com/imsai-sh/open-dynamic-workflows).
 5. **Do not** pretend IDE-only tools are executors; keep Scope=`inline` and use that
    harness's native subagents if you cannot spawn a headless leaf.
 
