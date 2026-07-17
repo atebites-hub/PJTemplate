@@ -128,6 +128,33 @@ pyenv local "$PYTHON_VERSION"
 echo "==> Activating project git hooks (Tier-1 compliance gate)"
 git config core.hooksPath .githooks
 
+echo "==> Initialising git submodules (vendor/open-dynamic-workflows)"
+if [ -f "${PROJECT_ROOT}/.gitmodules" ]; then
+  if [ ! -f "${PROJECT_ROOT}/vendor/open-dynamic-workflows/package.json" ]; then
+    git -C "${PROJECT_ROOT}" submodule update --init --recursive || {
+      echo "WARNING: git submodule update failed — run: git submodule update --init --recursive" >&2
+    }
+  fi
+fi
+
+if [ -f "${PROJECT_ROOT}/vendor/open-dynamic-workflows/package.json" ]; then
+  if command -v node >/dev/null 2>&1 && command -v npm >/dev/null 2>&1; then
+    node_major="$(node -p "process.versions.node.split('.')[0]" 2>/dev/null || echo 0)"
+    if [ "${node_major}" -ge 20 ] 2>/dev/null; then
+      echo "==> Building vendor/open-dynamic-workflows (Node ${node_major})"
+      (cd "${PROJECT_ROOT}/vendor/open-dynamic-workflows" && npm ci && npm run build) || {
+        echo "WARNING: ODW build failed — ./scripts/odw will retry on first use" >&2
+      }
+    else
+      echo "WARNING: Node >=20 required for open-dynamic-workflows (found major=${node_major:-none}); skip ODW build" >&2
+    fi
+  else
+    echo "WARNING: node/npm not found — skip ODW build; install Node >=20 for ./scripts/odw" >&2
+  fi
+else
+  echo "WARNING: vendor/open-dynamic-workflows missing after submodule init" >&2
+fi
+
 echo "==> Creating virtual environment"
 python -m venv .venv
 # shellcheck source=/dev/null

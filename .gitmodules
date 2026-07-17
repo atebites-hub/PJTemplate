@@ -1,0 +1,4 @@
+[submodule "vendor/open-dynamic-workflows"]
+	path = vendor/open-dynamic-workflows
+	url = https://github.com/imsai-sh/open-dynamic-workflows.git
+	branch = main

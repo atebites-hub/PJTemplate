@@ -54,7 +54,7 @@ Optional parameters on the tool (e.g. revision or branching) may be used when yo
 
 | Thought | Focus |
 |---------|--------|
-| 1 | **Requirements** — What, constraints, acceptance criteria; confirm **Scope** (`inline` vs `dynamic-workflows`) in task memory |
+| 1 | **Requirements** — What, constraints, acceptance criteria; confirm **Scope** (`inline` vs `open-dynamic-workflows`) in task memory |
 | 2 | **Retrieval** — Which core docs, task memory entries, and codebase areas (files, symbols, prior art) you must read or search before design; what stays unknown until retrieved |
 | 3 | **Design** — Patterns, boundaries, file locations, alternatives (grounded in retrieved context) |
 | 4 | **Implementation** — Ordered steps, touchpoints, migration or rollback notes if relevant |

@@ -31,7 +31,7 @@ Pick the most relevant paths from context (current sprint task, links in **Relat
 
 1. **Naming**: `YYYY-MM-DD-<short-task-slug>.md` (kebab-case slug).
 2. **Template**: Copy [assets/memory_template.md](assets/memory_template.md). Task structure and fields are defined there—do not duplicate that spec in other repo docs.
-3. **Before starting**: New file from template; complete **Description**, **Related Memories**, **Task (TCREI)** (including **Scope**: `inline` or `dynamic-workflows`), **Status** (`in_progress`, timestamps).
+3. **Before starting**: New file from template; complete **Description**, **Related Memories**, **Task (TCREI)** (including **Scope**: `inline` or `open-dynamic-workflows`), **Status** (`in_progress`, timestamps).
 4. **After finishing**: Same file; set **Status** (`completed` / `cancelled`), **Lessons** / **Learnings**, final timestamps.
 
 ## Requirements

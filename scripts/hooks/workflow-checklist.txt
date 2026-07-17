@@ -2,10 +2,11 @@ PJTemplate agent workflow (re-injected on session startup, resume, clear, and af
 
 1. memory-system — Scan docs/memories/ (recall), open or create the task memory; set Status to in_progress.
 2. Plan — After user discussion, use this harness plan mode; record outcomes in task memory TCREI (Task, Plan, Scope).
-3. Scope — inline (default) | dynamic-workflows. Set during planning. Use dynamic-workflows only for multi-module or high-stakes work (auth, money, prod config, data loss) or when you expect >3 non-doc files / ~500 LOC. See dynamic-workflows skill when Scope=dynamic-workflows.
+3. Scope — inline (default) | open-dynamic-workflows. Set during planning. Use open-dynamic-workflows only for multi-module / high-stakes / many-agent work; write a workflow.js and run ./scripts/odw (skill: open-dynamic-workflows).
 4. reasoning-system — BEFORE any edit under src/**: run sequentialthinking, then persist Context, Evaluation, and Key Challenges in task memory.
-5. Build — Inline implementation, or invoke dynamic-workflows when Scope=dynamic-workflows.
+5. Build — Inline implementation, or open-dynamic-workflows (author + odw run) when Scope=open-dynamic-workflows.
 6. Before commit — Update task memory and docs/code mirrors for changed src files. Harness Stop runs check-task-compliance.sh --task; git pre-commit enforces C1/C2/C3.
 
-Skills: .agents/skills/memory-system, reasoning-system, dynamic-workflows
+Skills: .agents/skills/memory-system, reasoning-system, open-dynamic-workflows
 Enforcement: docs/agents/enforcement_matrix.md
+ODW: vendor/open-dynamic-workflows; matrix: docs/agents/odw_executor_matrix.md

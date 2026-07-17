@@ -1,0 +1,31 @@
+#!/usr/bin/env bash
+# Run the vendored open-dynamic-workflows CLI (HarborRunner-style vendor/).
+# Usage: ./scripts/odw run <script.js> [flags…]
+set -Eeuo pipefail
+
+REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+VENDOR_DIR="${REPO_ROOT}/vendor/open-dynamic-workflows"
+CLI_JS="${VENDOR_DIR}/dist/cli.js"
+
+if [[ ! -f "${VENDOR_DIR}/package.json" ]]; then
+  echo "ERROR: missing vendor/open-dynamic-workflows (git submodule)." >&2
+  echo "  git submodule update --init --recursive" >&2
+  exit 1
+fi
+
+if [[ ! -f "${CLI_JS}" ]]; then
+  if ! command -v npm >/dev/null 2>&1; then
+    echo "ERROR: ODW CLI not built and npm not found (need Node ≥20)." >&2
+    echo "  Install Node, then: (cd vendor/open-dynamic-workflows && npm ci && npm run build)" >&2
+    exit 1
+  fi
+  echo "==> Building open-dynamic-workflows (first run)" >&2
+  (cd "${VENDOR_DIR}" && npm ci && npm run build)
+fi
+
+if [[ ! -f "${CLI_JS}" ]]; then
+  echo "ERROR: expected ${CLI_JS} after build." >&2
+  exit 1
+fi
+
+exec node "${CLI_JS}" "$@"

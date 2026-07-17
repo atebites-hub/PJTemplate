@@ -21,17 +21,31 @@ Structured reasoning before implementation is handled by the `reasoning-system` 
 
 **Requirement**: Use the `reasoning-system` skill before implementing features, refactoring, or making architectural decisions. Invoke after planning but before editing code. The pass must cover retrieval (docs, task memory, code to read) and testing/regression strategy, not only design.
 
-## Dynamic Workflows
+## Dynamic Workflows (open-dynamic-workflows)
 
-Large, high-risk, or multi-module builds use the harness-agnostic `dynamic-workflows`
-skill — [.agents/skills/dynamic-workflows/SKILL.md](.agents/skills/dynamic-workflows/SKILL.md)
-(works across Grok, Cursor, Codex, Claude). Invoke as `/dynamic-workflows` or by
-name when one agent cannot safely self-report at merge time.
+Large multi-agent work uses **[open-dynamic-workflows](https://github.com/imsai-sh/open-dynamic-workflows)**
+(ODW): a model-/harness-agnostic runtime that executes a plain JS workflow script
+(`export const meta` + `agent()` / `parallel()` / `pipeline()` / `phase()`), fanning
+each leaf out to a named CLI executor.
 
-**This repo's gate bindings:** [.agents/skills/dynamic-workflows/references/pjtemplate-bindings.example.md](.agents/skills/dynamic-workflows/references/pjtemplate-bindings.example.md).
+| Piece | Location |
+| --- | --- |
+| **Vendored runtime** | [`vendor/open-dynamic-workflows/`](vendor/open-dynamic-workflows/) (git submodule; HarborRunner-style `vendor/` integrate) |
+| **Skill (upstream)** | [`.agents/skills/open-dynamic-workflows/SKILL.md`](.agents/skills/open-dynamic-workflows/SKILL.md) → symlink into the submodule skill |
+| **CLI** | `./scripts/odw` (wraps built `vendor/.../dist/cli.js`) or `npx` after `npm run build` in the vendor tree |
+| **Committed scripts** | Optional [`.agents/workflows/*.js`](.agents/workflows/) |
+| **Harness / executor matrix** | [`docs/agents/odw_executor_matrix.md`](docs/agents/odw_executor_matrix.md) |
 
-**Pattern**: worktree → recon spec → staged TDD → 6-lens review → refute panels →
-fix/gate loop → docs lane → orchestrator verify → **simplify before push** → PR.
+**Invoke:** skill `open-dynamic-workflows` / `/open-dynamic-workflows`, then write a
+script and run `./scripts/odw run <script.js>`. Every `agent()` **must** set
+`{ executor: '…' }` to a name in the host registry (bundled: `claude`, `codex`).
+
+**When:** dozens–hundreds of agents, rerunnable orchestration, or quality patterns
+that need independent seats (audits, large migrations, multi-angle plans). **Not**
+for one-file fixes or ordinary inline work — keep `Scope: inline` for those.
+
+**Setup:** `git submodule update --init --recursive` then build the vendor package
+(Node ≥20). `scripts/setup.sh` does this when Node is present.
 
 ## Agent Tooling & Integrations
 
@@ -53,7 +67,22 @@ them through committed symlinks.
 - **Skills** live in `.agents/skills/<name>/SKILL.md` (Agent Skills standard:
   `name` + `description` frontmatter). Claude discovers them at
   `.claude/skills/` (via the symlink); Codex reads `.agents/skills/` directly.
-  Current skills: `memory-system`, `reasoning-system`, `dynamic-workflows`.
+  Current skills: `memory-system`, `reasoning-system`, `open-dynamic-workflows`
+  (vendored symlink).
+
+### Vendored integrations (`vendor/`)
+
+Third-party **repos** this template integrates live under `vendor/` as **git
+submodules** (same pattern as HarborRunner's `vendor/SnakeInTalons`):
+
+| Path | Upstream | Role |
+| --- | --- | --- |
+| `vendor/open-dynamic-workflows` | [imsai-sh/open-dynamic-workflows](https://github.com/imsai-sh/open-dynamic-workflows) | Dynamic-workflow runtime + authoring skill (MIT) |
+
+- Pin by submodule commit (reviewed HEAD recorded in git history / `.gitmodules`).
+- Clone with `git clone --recurse-submodules` or run `git submodule update --init --recursive`.
+- Build ODW (Node ≥20): `cd vendor/open-dynamic-workflows && npm ci && npm run build`.
+- Runtime journals land under `.odw/` (gitignored `runs/`); do not commit agent traces.
 
 ### Claude Code plugins (auto-enabled)
 

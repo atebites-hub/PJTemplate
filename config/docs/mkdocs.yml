@@ -31,6 +31,7 @@ nav:
   - Process docs:
       - Enforcement matrix: agents/enforcement_matrix.md
       - Execution policy: agents/execution_policy.md
+      - ODW executor matrix: agents/odw_executor_matrix.md
   - Test docs:
       - Dev notebooks: tests/notebooks.md
   - Code documentation:

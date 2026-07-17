@@ -42,6 +42,7 @@ upstream one already knew.
 | **Routing** | Classify the input, then dispatch to the specialized handler (cheap model triages; right tier handles). |
 | **Parallelization** | Independent subtasks fanned out, then aggregated (sectioning) or voted (decorrelated checks). |
 | **Orchestrator-worker** *(the default)* | A main thread holds the plan and spawns isolated workers for bounded, context-isolated subtasks (search, exploration, a single review). |
+| **Dynamic workflow (ODW)** | Large / high-risk / many-agent work codified as a JS script under `.agents/workflows/` and run via `./scripts/odw` (skill `open-dynamic-workflows`). Prefer over ad-hoc fan-out when seats must be resumeable or exceed one conversation. See `docs/agents/odw_executor_matrix.md`. |
 | **Evaluator-optimizer** | A builder proposes; a **separate** evaluator judges against a concrete gate; iterate. **This is Feature A's decorrelated acceptance gate** (see §9 and the `reasoning-system` skill, thought 5). |
 
 ## 5. Model routing by where errors are costly

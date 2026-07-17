@@ -52,7 +52,7 @@ The matrix confirms the three-tier split:
   with `.githooks/pre-commit` calling `scripts/check-task-compliance.sh --staged`.
 
 - **Tier 2 — per-harness adapters are optional accelerators.** They give the agent in-loop feedback *before* it reaches `git commit`, but they are non-authoritative (each harness has its own schema, and several have none). **Claude Code ships two adapters** in `.agents/settings.json` (read via the `.claude` symlink):
-  - **`SessionStart`** (matcher `startup|resume|clear|compact`) → `scripts/hooks/session-workflow-checklist.sh` reinjects the memory/reasoning/dynamic-workflows checklist after compact (Ponytail-style context injection; non-blocking).
+  - **`SessionStart`** (matcher `startup|resume|clear|compact`) → `scripts/hooks/session-workflow-checklist.sh` reinjects the memory/reasoning/open-dynamic-workflows checklist after compact (Ponytail-style context injection; non-blocking).
   - **`Stop`** → `scripts/check-task-compliance.sh --task` (exit code 2 feeds stderr back to the model).
 
   ```json

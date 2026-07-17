@@ -56,3 +56,9 @@ docs/memories/*.md
 # GitNexus runtime artifacts (the code graph + packed bundles)
 .gitnexus/
 gitnexus-*.tgz
+
+# open-dynamic-workflows run journals (keep scripts; ignore traces)
+.odw/
+# vendored ODW install/build (submodule source stays tracked)
+vendor/open-dynamic-workflows/node_modules/
+vendor/open-dynamic-workflows/dist/
