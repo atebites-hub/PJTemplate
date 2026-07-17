@@ -26,3 +26,8 @@ scrape_configs:
     metrics_path: /metrics
     static_configs:
       - targets: ["loki:3100"]
+
+  - job_name: pyroscope
+    metrics_path: /metrics
+    static_configs:
+      - targets: ["pyroscope:4040"]

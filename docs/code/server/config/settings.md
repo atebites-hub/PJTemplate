@@ -8,7 +8,7 @@ Typed application configuration loaded from a TOML file plus mounted secret file
 
 ## Key entry points and contracts
 
-- `Settings` (class, `pydantic_settings.BaseSettings`): top-level config model. Holds nested sections `app`, `server`, `workers`, `logging`, `observability`, `features`, `metrics`, `tracing`, plus optional top-level secrets (`openai_api_key`, `anthropic_api_key`, `jwt_signing_key`, `postgres_password`, `redis_password`) typed as `SecretStr | None`. Accepts init kwargs (used by tests). `extra` keys are ignored; defaults are validated.
+- `Settings` (class, `pydantic_settings.BaseSettings`): top-level config model. Holds nested sections `app`, `server`, `workers`, `logging`, `observability`, `features`, `metrics`, `tracing`, `profiling`, plus optional top-level secrets (`openai_api_key`, `anthropic_api_key`, `jwt_signing_key`, `postgres_password`, `redis_password`) typed as `SecretStr | None`. Accepts init kwargs (used by tests). `extra` keys are ignored; defaults are validated.
 - `Settings.settings_customise_sources(...)` (classmethod, overrides Pydantic hook): returns the source precedence tuple `(init_settings, TomlConfigSettingsSource, file_secret_settings)`. Highest priority is init kwargs, then the TOML file, then secret files. No env/dotenv sources.
 - `Settings.non_secret_dump() -> dict[str, dict[str, object]]`: returns `model_dump` with all five secret fields excluded; the writable, non-secret view of config.
 - `Settings.log_root_path -> Path` (property): absolute resolved path of `REPO_ROOT / logging.root`.
@@ -25,10 +25,11 @@ Nested config models, each a `pydantic.BaseModel` with typed defaults:
 - `ServerConfig` — `host`, `port`.
 - `WorkersConfig` — `max_processes`, `spawn_mode`, `request_timeout_ms`.
 - `LoggingConfig` — `root`, `current_dir`, `archive_dir`, `level`, `format`, `max_mb`, `backup_count`. Validators: `level` is upper-cased and must be one of DEBUG/INFO/WARNING/ERROR/CRITICAL; `format` is lower-cased and must be `jsonl`.
-- `ObservabilityConfig` — `service_name`, `metrics_enabled`, `tracing_enabled`, `log_correlation_enabled`, `otlp_endpoint`, `sample_ratio`. Validator: `sample_ratio` must be in `[0.0, 1.0]`.
+- `ObservabilityConfig` — `service_name`, `metrics_enabled`, `tracing_enabled`, `profiling_enabled` (default false), `log_correlation_enabled`, `otlp_endpoint`, `sample_ratio`. Validator: `sample_ratio` must be in `[0.0, 1.0]`.
 - `FeaturesConfig` — `web_ui_writes_config`.
 - `MetricsConfig` — `path`, `namespace`, `subsystem`, `process_metrics_enabled`.
 - `TracingConfig` — `exporter`, `protocol`, `insecure`, `timeout_ms`.
+- `ProfilingConfig` — Grafana Pyroscope client: `server_address`, `sample_rate` (≥ 1), `oncpu`, `gil_only`, `enable_logging`, `span_profiles_enabled`, `report_pid` / `report_thread_id` / `report_thread_name`, optional `basic_auth_username` / `basic_auth_password` / `tenant_id` for Cloud/multi-tenant.
 
 Module-level path constants: `REPO_ROOT` (three parents up from this file), `CONFIG_DIR` (`<repo>/config`), `APP_CONFIG_PATH` (`<config>/defaults.toml`), `LOCAL_SECRETS_DIR` (`<config>/secrets`), `RUNTIME_SECRETS_DIR` (`/run/secrets`).
 

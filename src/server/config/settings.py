@@ -94,6 +94,7 @@ class ObservabilityConfig(BaseModel):
     service_name: str = "yourapp"
     metrics_enabled: bool = True
     tracing_enabled: bool = True
+    profiling_enabled: bool = False
     log_correlation_enabled: bool = True
     otlp_endpoint: str = "http://localhost:4317"
     sample_ratio: float = 0.1
@@ -131,6 +132,40 @@ class TracingConfig(BaseModel):
     timeout_ms: int = 5000
 
 
+class ProfilingConfig(BaseModel):
+    """Grafana Pyroscope continuous profiling client options."""
+
+    server_address: str = "http://localhost:4040"
+    sample_rate: int = 100
+    oncpu: bool = True
+    gil_only: bool = True
+    enable_logging: bool = False
+    span_profiles_enabled: bool = True
+    report_pid: bool = False
+    report_thread_id: bool = False
+    report_thread_name: bool = False
+    basic_auth_username: str = ""
+    basic_auth_password: str = ""
+    tenant_id: str = ""
+
+    @field_validator("sample_rate")
+    @classmethod
+    def validate_sample_rate(cls, value: int) -> int:
+        """Require a positive sampling rate (samples per second)."""
+        if value < 1:
+            raise ValueError("profiling.sample_rate must be >= 1")
+        return value
+
+    @field_validator("server_address")
+    @classmethod
+    def validate_server_address(cls, value: str) -> str:
+        """Require a non-empty Pyroscope server URL."""
+        cleaned = value.strip()
+        if not cleaned:
+            raise ValueError("profiling.server_address must be a non-empty URL")
+        return cleaned
+
+
 # ------------------------------------------------------------------------------
 # Main settings model
 # ------------------------------------------------------------------------------
@@ -162,6 +197,7 @@ class Settings(BaseSettings):
     features: FeaturesConfig = FeaturesConfig()
     metrics: MetricsConfig = MetricsConfig()
     tracing: TracingConfig = TracingConfig()
+    profiling: ProfilingConfig = ProfilingConfig()
 
     # Top-level secrets: each field maps to one file in the secrets dir
     openai_api_key: SecretStr | None = None

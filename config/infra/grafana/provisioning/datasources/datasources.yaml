@@ -47,3 +47,18 @@ datasources:
             value: "service"
           - key: "span.name"
             value: "span"
+      # Span → continuous profile (requires app span_profiles_enabled + Pyroscope).
+      tracesToProfiles:
+        datasourceUid: "pyro"
+        profileTypeId: "process_cpu:cpu:nanoseconds:cpu:nanoseconds"
+        tags:
+          - key: "service.name"
+            value: "service_name"
+
+  - name: Pyroscope
+    type: grafana-pyroscope-datasource
+    uid: pyro
+    access: proxy
+    url: http://pyroscope:4040
+    jsonData:
+      minStep: "15s"

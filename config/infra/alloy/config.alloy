@@ -21,6 +21,8 @@ otelcol.receiver.otlp "ingest" {
     traces = [otelcol.processor.batch.traces.input]
     # Optional future path if you later emit OTel logs directly:
     # logs   = [otelcol.processor.batch.logs.input]
+    # Profiles: this template ships app → Pyroscope HTTP (pyroscope-io SDK).
+    # If you later send OTLP profiles, fan them out to Pyroscope here.
   }
 }
 

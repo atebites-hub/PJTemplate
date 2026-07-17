@@ -1,0 +1,29 @@
+# Grafana Pyroscope single-binary config for local / template stacks.
+# Docs: https://grafana.com/docs/pyroscope/latest/configure-server/reference-configuration-parameters/
+#
+# Example compose service (not checked in — template keeps config-only infra):
+#   pyroscope:
+#     image: grafana/pyroscope:latest
+#     ports: ["4040:4040"]
+#     command: ["-config.file=/etc/pyroscope/config.yaml"]
+#     volumes:
+#       - ./config/infra/pyroscope/pyroscope.yaml:/etc/pyroscope/config.yaml:ro
+#
+# App client default: profiling.server_address = "http://pyroscope:4040"
+
+target: all
+
+server:
+  http_listen_port: 4040
+  grpc_listen_port: 9095
+
+# Self-monitoring scrape endpoint (optional Prometheus job).
+# Metrics are exposed on the HTTP listen port at /metrics.
+
+storage:
+  backend: filesystem
+  filesystem:
+    dir: /var/lib/pyroscope
+
+self_profiling:
+  disable_push: true

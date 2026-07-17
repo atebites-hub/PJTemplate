@@ -23,6 +23,8 @@ dependencies = [
   "opentelemetry-exporter-otlp-proto-grpc",
   "opentelemetry-instrumentation-fastapi",
   "opentelemetry-instrumentation-logging",
+  "pyroscope-io",
+  "pyroscope-otel",
 ]
 
 [project.optional-dependencies]

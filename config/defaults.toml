@@ -30,6 +30,8 @@ queue_enabled = true
 service_name = "yourapp"
 metrics_enabled = true
 tracing_enabled = true
+# Continuous profiling (Pyroscope) is off by default; enable when the stack runs.
+profiling_enabled = false
 log_correlation_enabled = true
 otlp_endpoint = "http://alloy:4317"
 sample_ratio = 0.1
@@ -45,6 +47,23 @@ exporter = "otlp"
 protocol = "grpc"
 insecure = true
 timeout_ms = 5000
+
+[profiling]
+# App pushes profiles directly to Pyroscope (Grafana Profiles datasource).
+server_address = "http://pyroscope:4040"
+sample_rate = 100
+oncpu = true
+gil_only = true
+enable_logging = false
+# Link OTel root spans to profiles (requires tracing_enabled + pyroscope-otel).
+span_profiles_enabled = true
+report_pid = false
+report_thread_id = false
+report_thread_name = false
+# Leave empty for local OSS Pyroscope; set for Grafana Cloud Profiles / multi-tenant.
+basic_auth_username = ""
+basic_auth_password = ""
+tenant_id = ""
 
 [fastapi]
 title = "yourapp"

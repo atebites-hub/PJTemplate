@@ -11,5 +11,8 @@ opentelemetry-sdk
 opentelemetry-exporter-otlp-proto-grpc
 opentelemetry-instrumentation-fastapi
 opentelemetry-instrumentation-logging
+# Continuous profiling (Grafana Pyroscope) + OTel span-profile bridge.
+pyroscope-io
+pyroscope-otel
 # idna is transitive (via anyio); floor set to clear PYSEC-2026-215.
 idna>=3.15  # CVE floor: PYSEC-2026-215

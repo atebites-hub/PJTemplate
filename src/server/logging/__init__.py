@@ -1,1 +1,1 @@
-"""Logging, metrics, tracing, and combined telemetry helpers."""
+"""Logging, metrics, tracing, profiling, and combined telemetry helpers."""

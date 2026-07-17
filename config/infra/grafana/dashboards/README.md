@@ -15,6 +15,7 @@ This directory contains version-controlled dashboard JSON files.
   - Prometheus: `prom`
   - Loki: `loki`
   - Tempo: `tempo`
+  - Pyroscope: `pyro`
 
 ## Workflow
 
@@ -28,4 +29,5 @@ This directory contains version-controlled dashboard JSON files.
 - Keep one dashboard per JSON file
 - Start with a small number of high-signal dashboards
 - For app traces, logs should include `trace_id`
-- Tempo links are driven by the provisioned datasource config
+- Tempo links are driven by the provisioned datasource config (logs, metrics, profiles)
+- Continuous profiles: enable `observability.profiling_enabled` and run Pyroscope; Tempo `tracesToProfiles` uses datasource uid `pyro`
