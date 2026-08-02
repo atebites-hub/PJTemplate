@@ -1,0 +1,35 @@
+# Two ecosystems only. pip is deliberately EXCLUDED: Dependabot edits compiled
+# lockfiles directly (it does NOT re-run pip-compile from requirements*.in),
+# which desyncs requirements*.txt from requirements*.in under --require-hashes
+# and has known hash-ordering / interpreter-mismatch bugs. Python CVE coverage
+# stays with scripts/security/supply-chain-audit.sh (pip-audit + OSV-Scanner).
+# To bump Python deps: edit requirements*.in, re-run pip-compile, commit both.
+version: 2
+updates:
+  # SHA-pinned `uses:` in .github/workflows/*.yml. Dependabot bumps the commit
+  # SHA AND rewrites the trailing "# vX" comment to the new tag -- matches this
+  # repo's pinning style. Grouped into one PR/week to cut noise.
+  - package-ecosystem: github-actions
+    directory: "/"
+    schedule:
+      interval: weekly
+    groups:
+      actions:
+        patterns: ["*"]
+
+  # Base images in both Dockerfiles (kept in sync). No hashes -> nothing to
+  # break. `python` is pinned to patch-only: the lockfiles are compiled for
+  # 3.12, so a 3.12 -> 3.13 bump would desync them and force a manual
+  # re-compile; patch bumps (3.12.12 -> 3.12.13) flow automatically.
+  - package-ecosystem: docker
+    directories: ["/", "/.devcontainer"]
+    schedule:
+      interval: weekly
+    groups:
+      images:
+        patterns: ["*"]
+    ignore:
+      - dependency-name: "python"
+        update-types:
+          - version-update:semver-major
+          - version-update:semver-minor

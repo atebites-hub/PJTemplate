@@ -108,6 +108,14 @@ run_python_gates() {
     python -m pip inspect --local
   run_capture "pip-audit with hashes" "$REPORT_DIR/pip-audit.json" \
     pip-audit --require-hashes -r requirements.txt -f json
+  # Dev lockfile is scanned REPORT-ONLY locally (mirrors CI): run_capture treats a
+  # nonzero exit as fatal, and pip-audit exits 1 on any finding, so a fatal dev
+  # scan would conflate dev-scoped vulns with a real runtime failure. Dev
+  # visibility comes from this report plus the OSV-Scanner run over both lockfiles.
+  log "pip-audit (dev, report-only) -> $REPORT_DIR/pip-audit-dev.json"
+  pip-audit --require-hashes -r requirements-dev.txt -f json \
+    >"$REPORT_DIR/pip-audit-dev.json" 2>"$REPORT_DIR/pip-audit-dev.json.stderr" \
+    || log "    pip-audit (dev) reported findings; see pip-audit-dev.json"
   run_capture "bandit JSON report" "$REPORT_DIR/bandit.json" \
     bandit -q -c config/security/bandit.yaml -r src -f json
 }

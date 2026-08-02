@@ -37,6 +37,10 @@
 #   S7 odw-build      (only if odw_runtime=keep) vendor/.../dist/cli.js built
 #   S8 coverage       --cov-fail-under in pyproject.toml (non-comment) >= 80 AND
 #                     at least one test file exists for the floor to measure
+#   S9 homoglyphs     NFKC + ASCII-fold pass: catches placeholders left in place
+#                     but disguised with a lookalike Unicode char (Cyrillic a,
+#                     Greek o, smart dash). Reports only near-misses the raw
+#                     S3 sweep missed. FAIL, same contract as S3.
 #
 # Exit codes: 0 complete (or dormant/skipped), 1 setup incomplete, 2 usage/env error.
 
@@ -193,6 +197,7 @@ ODW_DECISION="$(setup_val odw_runtime)"
 EXCLUDES=(
   ':(exclude)docs/agents/template_setup_checklist.md'
   ':(exclude)docs/agents/enforcement_matrix.md'
+  ':(exclude)docs/agents/upgrade.md'
   ':(exclude)scripts/check-template-setup.sh'
   ':(exclude)config/setup.toml'
   ':(exclude).template-scaffold'
@@ -219,6 +224,74 @@ PLACEHOLDERS=(
 for p in "${PLACEHOLDERS[@]}"; do
   scan_for "$p"
 done
+
+# --- S9: homoglyph placeholder sweep (NFKC + ASCII-fold) --------------------
+#
+# S3 is a byte-exact ASCII grep, so a placeholder left in place but disguised
+# with a lookalike Unicode char (Cyrillic a U+0430 for ASCII a, Greek o, a
+# smart dash) slips past it. S9 NFKC-normalizes + ASCII-folds each tracked text
+# file (same EXCLUDES pathspec as S3) and re-greps for PLACEHOLDERS, reporting
+# only near-misses: lines where the raw ASCII token is absent but the folded
+# form is present. python3 (>=3.12, guaranteed by pyproject) + stdlib
+# unicodedata only; uconv/ICU not required.
+#
+# Ceiling (ponytail): the fold map covers Latin-letter Cyrillic/Greek
+# homoglyphs plus the placeholder punctuation set (- , .). It is NOT the full
+# Unicode TR-39 confusables table; NFKC already folds fullwidth letters/digits
+# and most spaces, which is why those are absent from the map. Smart-quote
+# folds are omitted because no current placeholder contains an ASCII quote;
+# add U+2018/2019->' and U+201C/201D->" the day one does. Exhaustive coverage
+# means vendoring Unicode confusables.txt; named here as the upgrade path.
+#
+# The python source is pure ASCII (hex-point/ASCII pairs, no literal non-ASCII
+# glyphs) so the .sh stays editor-safe; the assert keeps the pairs aligned.
+s9_py='import sys,unicodedata
+PH=[a for a in sys.argv[1:] if a!="--"]
+_SPEC=[
+("0430 0435 0456 0458 0455 043e 0440 0441 0443 0445 051b","aeijsopcyxq"),
+("0410 0412 0415 041a 041c 041d 041e 0420 0421 0422 0425 0405 0406 0408","ABEKMHOPCTXSIJ"),
+("03b1 03b5 03b9 03ba 03bf 03c1 03bd 03f2 03c7","aeikopvsx"),
+("0391 0392 0395 0396 0397 0399 039a 039c 039d 039f 03a1 03a4 03a7","ABEZHIKMNOPTX"),
+("2010 2011 2012 2013 2014 2015 2212","-"*7),
+("201a 201e",",,"),
+("2024","."),
+]
+_fd={}
+for pts,asc in _SPEC:
+    cps=pts.split()
+    assert len(cps)==len(asc),(pts,asc)
+    for cp,ch in zip(cps,asc): _fd[chr(int(cp,16))]=ch
+FOLD=str.maketrans(_fd)
+def fold(s): return unicodedata.normalize("NFKC",s).translate(FOLD)
+out=[]
+for path in sys.stdin.buffer.read().split(b"\x00"):
+    if not path: continue
+    p=path.decode("utf-8","replace")
+    try: raw=open(p,"rb").read()
+    except OSError: continue
+    if b"\x00" in raw[:8192]: continue
+    try: text=raw.decode("utf-8")
+    except UnicodeDecodeError: continue
+    for i,line in enumerate(text.splitlines(),1):
+        fl=fold(line)
+        for ph in PH:
+            if ph in line: continue
+            if ph in fl: out.append("%s:%d:%s"%(p,i,line)); break
+sys.stdout.write(("\n".join(out)+"\n") if out else "")'
+
+near="$(git ls-files -z -- . "${EXCLUDES[@]}" | python3 -c "$s9_py" "${PLACEHOLDERS[@]}")" && s9_rc=0 || s9_rc=$?
+if (( s9_rc != 0 )); then
+  fail "S9 [homoglyphs]: scanner crashed (rc=$s9_rc) -- a python crash silently \
+disables this check; verify the _SPEC hex/ASCII pairs in this script are aligned."
+fi
+if [[ -n "$near" ]]; then
+  fail "S9 [homoglyphs]: placeholder near-miss(es) -- ASCII-fold hit where the raw S3 sweep missed:"
+  while IFS= read -r ln; do
+    note "    $ln"
+  done <<<"$near"
+  note "    A placeholder looks present but disguised with a lookalike Unicode char"
+  note "    (Cyrillic/Greek letter, smart dash). Replace the whole token with the real value."
+fi
 
 # --- S4: git hooks activated and real --------------------------------------
 

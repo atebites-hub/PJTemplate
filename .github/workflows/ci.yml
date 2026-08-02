@@ -69,6 +69,14 @@ jobs:
       - name: pip-audit
         run: pip-audit -r requirements.txt
 
+      # Report-only: the dev lockfile carries known dev-scoped transitive
+      # vulns (pytest, urllib3, pip, setuptools, pydantic-settings, ...). They
+      # are not shipped. Curate --ignore-vuln IDs (pip-audit does not read
+      # osv-scanner.toml) then drop continue-on-error to enforce.
+      - name: pip-audit (dev lockfile)
+        continue-on-error: true
+        run: pip-audit -r requirements-dev.txt
+
       - name: Prepare supply-chain report dir
         run: mkdir -p logs/current/supply-chain
 
@@ -106,6 +114,34 @@ jobs:
             --report-dir logs/current/supply-chain \
             --config config/security/guarddog.json \
             --image ghcr.io/datadog/guarddog@sha256:1679817551670ab3665cd0e0192e16d1c871bb29658010052378df026033df3e
+
+      # Report-only by default: Trivy secret + IaC misconfig scan of the source
+      # tree. Runs the official Trivy OCI image pinned by DIGEST -- NOT the
+      # aquasecurity/trivy-action, which was compromised 2026-03-19
+      # (CVE-2026-33634 / GHSA-69fq-xp46-6x23; TeamPCP force-pushed 76 of 77
+      # tags and shipped a credential-stealing v0.69.4). vuln scanning is
+      # intentionally OFF: OSV-Scanner + pip-audit own dependency vulns.
+      # --skip-check-update pins the embedded misconfig checks (no bundle fetch)
+      # and vuln is absent from --scanners (no vuln-DB fetch), so the scan is
+      # deterministic and network-free. Curate config/security/trivyignore then
+      # drop continue-on-error (and add --exit-code 1 --severity HIGH,CRITICAL)
+      # to enforce.
+      - name: Trivy filesystem scan (secrets + misconfig)
+        continue-on-error: true
+        run: |
+          docker run --rm \
+            -v "$PWD:/src:ro" \
+            -v "$PWD/config/security:/cfg:ro" \
+            -v "$PWD/logs/current/supply-chain:/reports" \
+            ghcr.io/aquasecurity/trivy@sha256:cffe3f5161a47a6823fbd23d985795b3ed72a4c806da4c4df16266c02accdd6f \
+            fs /src \
+            --ignorefile /cfg/trivyignore \
+            --scanners secret,misconfig \
+            --skip-check-update \
+            --severity UNKNOWN,LOW,MEDIUM,HIGH,CRITICAL \
+            --skip-dirs vendor,src/client/node_modules \
+            --format json \
+            --output /reports/trivy.json
 
       # Enforcing: SHA-256-pinned OpenGrep binary, scans this repo's own source.
       - name: OpenGrep policy scan
@@ -147,6 +183,7 @@ jobs:
             logs/current/supply-chain/guarddog-*.json
             logs/current/supply-chain/opengrep.json
             logs/current/supply-chain/npm-worm-audit.json
+            logs/current/supply-chain/trivy.json
           if-no-files-found: ignore
 
       - name: Upload dist artifact

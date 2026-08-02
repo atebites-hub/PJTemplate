@@ -1,0 +1,13 @@
+# No active Trivy ignores.
+#
+# Keep this file so CI and local supply-chain scans can pass --ignorefile
+# consistently. Trivy ignores use one finding ID per line (vuln CVE/GHSA IDs,
+# misconfig IDs like AVD-*, or secret rule IDs). Add an entry only with a
+# tracked owner + reason, e.g.:
+#
+#   CVE-2026-XXXXX  # Owner: <name>. Not exploitable because <justification>.
+#   AVD-AWS-0123    # Owner: <name>. Accepted risk: <why>.
+#
+# Note: the secret scanner allowlists well-known EXAMPLE values (e.g.
+# AKIAIOSFODNN7EXAMPLE); use realistic high-entropy values when validating
+# detection, or a test will show zero findings and look broken.

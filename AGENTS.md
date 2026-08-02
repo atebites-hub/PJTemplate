@@ -153,14 +153,30 @@ Defense-in-depth, mostly ported from a hardened sibling project. Configs in
   worm/persistence audit, Bandit, and a git submodule inventory. Reports →
   `logs/current/supply-chain/`. Frontend (npm) gates activate automatically once
   `src/client/package.json` exists.
-- **CI** (`.github/workflows/ci.yml`) runs the same gates. OSV-Scanner and
-  GuardDog ship **report-only** (`continue-on-error`) so the template stays
+- **CI** (`.github/workflows/ci.yml`) runs the same gates, plus a digest-pinned
+  **Trivy** filesystem scan (secrets + IaC misconfig — CI-only; not yet mirrored
+  to the local script). OSV-Scanner, GuardDog, Trivy, and the dev-lockfile
+  `pip-audit` ship **report-only** (`continue-on-error`) so the template stays
   green; promote them to blocking after curating
-  `config/security/osv-scanner.toml` / `guarddog.json`. OpenGrep and the
-  npm-worm/persistence audit are enforcing.
+  `config/security/osv-scanner.toml` / `guarddog.json` / `trivyignore` (for
+  Trivy add `--exit-code 1 --severity HIGH,CRITICAL`). The runtime `pip-audit`
+  (`requirements.txt`), OpenGrep, and the npm-worm/persistence audit are
+  enforcing.
 - **Pin everything**: GitHub Actions by commit SHA, scanner containers by image
   digest, the OpenGrep binary by SHA-256, Python deps by hash
   (`pip --require-hashes`). Track CVE floors with comments in `requirements*.in`.
+- **Dependabot** (`.github/dependabot.yml`) watches `github-actions` (SHA-pinned
+  `uses:`) and `docker` base images (patch-only on `python` to avoid lockfile
+  desync). The `pip` ecosystem is deliberately off — it mutates compiled
+  lockfiles and fights `--require-hashes`; bump Python deps via the
+  `requirements*.in` → `pip-compile` flow (see `docs/agents/upgrade.md`).
+- **Trivy via image, not the action.** `aquasecurity/trivy-action` was
+  compromised 2026-03-19 (CVE-2026-33634 / GHSA-69fq-xp46-6x23; TeamPCP
+  force-pushed 76 of 77 tags and shipped a credential-stealing `v0.69.4`). This
+  template runs the official Trivy OCI image pinned by **digest**
+  (`ghcr.io/aquasecurity/trivy@sha256:…`) — content-addressed and immutable,
+  matching the OSV/GuardDog pattern. Refresh the digest per
+  `docs/agents/upgrade.md` §3.
 
 ## Development Workflow Requirements
 

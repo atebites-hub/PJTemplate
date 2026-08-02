@@ -171,9 +171,10 @@ The stack runs out of the box, but two decisions are yours.
       marketplace. Decide and record `done`.
 - [ ] ✍️ `secrets_reviewed` — `config/secrets/` ships only a README. Decide how
       this project loads secrets (files, env, vault) and record `done`.
-- [ ] **Optional**: promote OSV-Scanner / GuardDog from report-only to blocking
-      in `.github/workflows/ci.yml` (curate `config/security/osv-scanner.toml`
-      and `guarddog.json` first).
+- [ ] **Optional**: promote OSV-Scanner / GuardDog / Trivy from report-only to
+      blocking in `.github/workflows/ci.yml` (curate
+      `config/security/osv-scanner.toml`, `guarddog.json`, and `trivyignore`
+      first; for Trivy add `--exit-code 1 --severity HIGH,CRITICAL`).
 - [ ] **Optional**: Tracee eBPF runtime policy (`config/security/tracee/`) is
       present but not wired into CI — decide if you want runtime monitoring.
 
@@ -199,6 +200,11 @@ The stack runs out of the box, but two decisions are yours.
 - [ ] `./scripts/test-suite.sh` → lint, types, tests pass.
 - [ ] `./scripts/security/supply-chain-audit.sh` → clean.
 - [ ] First `git commit` succeeds through both gates (task-compliance + setup).
+- [ ] **GitHub branch protection** on `main`: require PR review and require the
+      `ci` status check to pass before merge. This makes the local pre-commit
+      gates survive `--no-verify` and `git commit --no-verify` (Tier-3 backstop).
+      Once the setup gate is promoted to CI (see `enforcement_matrix.md` §5),
+      require that check too.
 
 ---
 
