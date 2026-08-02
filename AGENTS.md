@@ -1,6 +1,7 @@
 # AGENTS.md - Project Rules
 
 ## Guidelines for Filling Out This Template
+- **Start with [`docs/agents/template_setup_checklist.md`](docs/agents/template_setup_checklist.md)** — it is the exhaustive manifest of every feature/decision this template ships, and it drives the setup gate (`scripts/check-template-setup.sh`) that blocks commits until the scaffold is fully transformed. Step 1 is `rm .template-scaffold` (activates the gate); record every decision in [`config/setup.toml`](config/setup.toml).
 - Replace [Project Name] with your project's name (e.g., "My API Service" or "Game App").
 - Set [Number] to the count of core docs (default 10; adjust if needed).
 - Customize consultation/quality gates for your domain (e.g., add "API rate limits" for server-heavy projects).

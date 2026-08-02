@@ -18,6 +18,11 @@ cd "$REPO_ROOT"
 # reasoning recorded (C3). Fires only when relevant; explains what is missing.
 scripts/check-task-compliance.sh --staged
 
+# Template-setup completeness: placeholders filled, tools activated, subsystem
+# decisions made. Dormant while .template-scaffold exists; blocks commits in a
+# derived project until docs/agents/template_setup_checklist.md is complete.
+scripts/check-template-setup.sh
+
 # Fast lint/format feedback on staged Python only (CI enforces over the whole tree).
 if command -v ruff >/dev/null 2>&1; then
   staged_py=()

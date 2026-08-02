@@ -1,0 +1,48 @@
+# config/setup.toml — template-to-project setup decisions.
+#
+# This file is the single attestation that the setup gate
+# (scripts/check-template-setup.sh) enforces. It blocks every commit until every
+# <TODO> below is resolved, then keeps the repo honest about which subsystems are
+# in use. Pair it with docs/agents/template_setup_checklist.md, which walks
+# through each field with the exact file(s) it touches.
+#
+# Values may be free text unless a comment lists the allowed literals.
+
+project_name = "<TODO>"            # Human name, e.g. "My API Service".
+project_slug = "<TODO>"            # Machine slug used in docker/prometheus/grafana, e.g. "my-api-service".
+
+# License applied to THIS project. The template itself ships as a scaffold.
+license_spdx = "<TODO>"            # e.g. "MIT", "Apache-2.0", "Proprietary".
+
+# GitNexus MCP (.mcp.json) is PolyForm Noncommercial 1.0.0. Personal/hobby/
+# research/study use is fine (including using this template personally). Only
+# genuinely commercial use needs a separate license from the GitNexus author.
+#   "keep-noncommercial" | "remove-mcp" | "licensed-commercial"
+gitnexus_license = "<TODO>"
+
+# Subsystem keep/strip decisions. "keep" = wired and expected to run; "strip" =
+# remove the files so they cannot rot. The checklist names what to delete.
+#   observability_stack : LGT+P (Loki/Grafana/Tempo + Pyroscope) + Alloy collector
+#   odw_runtime          : open-dynamic-workflows (vendor/ submodule + skill + scripts/odw)
+#   cd_docker            : GitHub Actions CD (cd.yml) + Dockerfile + GHCR image build
+#   notebooks            : Jupyter notebook support (notebooks/, requirements-notebooks*)
+observability_stack = "<TODO>"     # "keep" | "strip"
+odw_runtime = "<TODO>"             # "keep" | "strip"
+cd_docker = "<TODO>"               # "keep" | "strip"
+notebooks = "<TODO>"               # "keep" | "strip"
+
+# IDE / harness scaffolds to wire (comma-separated, lower-case). The bundle lives
+# in scripts/hooks/scaffolds/. Unknown names are ignored. e.g. "claude,cursor,codex"
+ide_scaffolds = "<TODO>"
+
+# Coverage floor this project enforces (matches --cov-fail-under in pyproject.toml).
+# The template default is 0; testing_guidelines.md mandates >= 80.
+coverage_floor_pct = "<TODO>"      # integer >= 0, e.g. 80
+
+# Review attestations. Set each to "done" only after the named review happened.
+# These exist because the gate cannot read your intent — they are your sign-off.
+defaults_toml_customized = "<TODO>"  # config/defaults.toml reviewed for this project
+core_docs_filled = "<TODO>"          # the 10 docs/agents/*_template.md filled/renamed
+secrets_reviewed = "<TODO>"          # config/secrets/ plan decided
+plugin_refs_reviewed = "<TODO>"      # .agents/settings.json marketplace refs reviewed
+python_version_confirmed = "<TODO>"  # .python-version matches the runtime you target

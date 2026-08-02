@@ -32,6 +32,7 @@ dev = [
   "bandit",
   "basedpyright",
   "build",
+  "httpx",
   "interrogate",
   "mkdocs",
   "mkdocstrings[python]",

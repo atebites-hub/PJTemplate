@@ -1,0 +1,16 @@
+# This file marks the repository as the pristine PJTemplate scaffold.
+#
+# While it exists, scripts/check-template-setup.sh is DORMANT: the setup gate does
+# not run, because a template legitimately contains unfilled placeholders. This
+# lets the template maintainer commit freely.
+#
+# Step 1 of deriving a new project from this template is to DELETE this file:
+#
+#     rm .template-scaffold
+#
+# The moment it is gone, the setup gate activates and blocks every commit until
+# config/setup.toml is filled and every required tool is configured. Work through
+# docs/agents/template_setup_checklist.md; the gate tells you what remains.
+#
+# Emergency override during incremental setup or template maintenance:
+#     SKIP_SETUP_GATE=1 git commit ...

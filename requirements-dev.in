@@ -6,6 +6,8 @@ ruff
 basedpyright
 pytest
 pytest-cov
+# httpx backs FastAPI's TestClient, needed for API tests in the dev env.
+httpx
 mkdocs
 mkdocstrings[python]
 interrogate

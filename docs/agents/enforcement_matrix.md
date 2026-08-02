@@ -97,7 +97,33 @@ The matrix confirms the three-tier split:
 
   Routing all three tiers through the *same* `scripts/check-task-compliance.sh` with three flags (`--staged`, `--task`, `--range`) keeps one source of truth: improving the check improves all tiers at once.
 
-## 5. Maintenance note
+## 5. Sibling gate — template-setup completeness
+
+A second gate, `scripts/check-template-setup.sh`, runs in the same Tier-1 hook
+immediately after `check-task-compliance.sh`. Where the task-compliance gate
+enforces *process artifacts per change*, the setup gate enforces *template-to-
+project transformation* — it blocks commits until the scaffold has been turned
+into a real project:
+
+- **placeholder sweep** — no `[Project Name]`, `yourapp`, `Your Name`,
+  `PJTemplate`, `[Number]`, `--cov-fail-under=0`, etc. left in tracked files;
+- **required tooling** — `core.hooksPath` set, `CLAUDE.md → AGENTS.md` and
+  `.claude → .agents` links intact, the ODW submodule initialized (and built if
+  kept);
+- **decisions** — `config/setup.toml` has no unresolved `<TODO>` fields, so every
+  subsystem (observability, ODW, CD, notebooks, IDE scaffolds) has an explicit
+  keep/strip decision and the GitNexus noncommercial license is addressed.
+
+It is **dormant by design**: while the marker file `.template-scaffold` exists the
+repo is the pristine template, so the gate prints one line and exits 0. Step 1 of
+deriving a project is `rm .template-scaffold`, which activates the gate. A one-off
+override is `SKIP_SETUP_GATE=1 git commit ...`. The canonical map for every item
+is [`docs/agents/template_setup_checklist.md`](template_setup_checklist.md). Add
+the same script to `.github/workflows/ci.yml` if you want a Tier-3 backstop for
+setup (the template ships Tier-1 only, since the template repo's own CI must stay
+green against the dormant gate).
+
+## 6. Maintenance note
 
 Harness hook APIs are young and moving fast — event names, config paths, and exit-code semantics change between releases, and tools add or drop hook support (Antigravity's hook surface is unsettled as of June 2026). **This matrix is a snapshot.** Before relying on any Tier-2 adapter:
 
