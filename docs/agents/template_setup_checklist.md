@@ -159,6 +159,32 @@ scans it for placeholders and two settings warrant a deliberate choice.
       and don't need kernel-level debugging, remove them — they weaken the
       container sandbox.
 
+### 5g. J-Space cognition skill — `jspace_skill`
+Vendor submodule `vendor/j-space-cognition-suite/`, skill symlink
+`.agents/skills/j-space` → `j-space/` inside that tree. Catalog:
+`docs/agents/agent_stack.md` §3. Independent of `reasoning-system` (do not
+merge them). No npm build.
+- [ ] ✍️ Record `keep` or `strip`.
+- [ ] 🔒 If `keep`: `git submodule update --init --recursive`. The gate's **S10**
+      checks the submodule is initialized and `.agents/skills/j-space/SKILL.md`
+      resolves.
+- [ ] 🗑️ If `strip`: `git submodule deinit -f vendor/j-space-cognition-suite`,
+      `git rm`, remove `.agents/skills/j-space`, and drop J-Space rows from
+      `AGENTS.md`.
+
+### 5h. Agent Kanban — `agent_kanban`
+Catalog only (nothing is vendored). Ranked FOSS boards live in
+`docs/agents/agent_stack.md` §1. If unsure, pick `kanbots` (KanBots OSS).
+- [ ] ✍️ Record one of: `none`, `kanbots`, `cline`, `hermes`, `nerkoman`,
+      `slayzone`, `taskboard`, `openkanban`, `u2dia`, `faru`, `other`.
+
+### 5i. ODW verifier — `odw_verifier`
+Catalog only. LLM-as-a-Verifier / TurboAgent as a quality layer on ODW
+leaves — not a Kanban, not every `agent()` call. See
+`docs/agents/agent_stack.md` §2.
+- [ ] ✍️ Record `none` or `llm-as-a-verifier`. Independent of `odw_runtime`;
+      most useful when ODW is `keep`.
+
 ---
 
 ## 6. Security & supply chain 🔒 + ✍️
@@ -189,8 +215,8 @@ The stack runs out of the box, but two decisions are yours.
 - [ ] ✍️ `defaults_toml_customized` — review every table in
       `config/defaults.toml`: `[server]`, `[workers]`, `[logging]`, `[security]`
       (CORS, trusted hosts), `[features]` toggles.
-- [ ] Review `docs/agents/execution_policy.md` and `enforcement_matrix.md` —
-      these are process docs that should match how this project actually runs.
+- [ ] Review `docs/agents/execution_policy.md`, `enforcement_matrix.md`, and
+      `agent_stack.md` — process docs that should match how this project actually runs.
 
 ---
 
@@ -212,7 +238,7 @@ The stack runs out of the box, but two decisions are yours.
 
 Agents miss template setup for three structural reasons: (1) setup knowledge is
 scattered across `AGENTS.md`, `README.md`, `setup.sh`, and 13 template docs;
-(2) opt-in subsystems (observability, ODW, CD, Tracee, IDE scaffolds) are present
+(2) opt-in subsystems (observability, ODW, CD, Tracee, IDE scaffolds, J-Space) are present
 but nothing forces an explicit yes/no; (3) ~18 distinct placeholders must be
 replaced with no verification. This checklist + `config/setup.toml` + the gate
 close all three gaps. The gate is the machine; this doc is the map.

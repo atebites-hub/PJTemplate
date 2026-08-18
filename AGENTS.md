@@ -49,6 +49,11 @@ for one-file fixes or ordinary inline work — keep `Scope: inline` for those.
 **Setup:** `git submodule update --init --recursive` then build the vendor package
 (Node ≥20). `scripts/setup.sh` does this when Node is present.
 
+Optional quality layer for high-stakes / best-of-N leaves: LLM-as-a-Verifier
+(catalog + `odw_verifier` in `config/setup.toml`). Do not wrap every `agent()`
+call. See [`docs/agents/agent_stack.md`](docs/agents/agent_stack.md) §2 and
+[`docs/agents/odw_executor_matrix.md`](docs/agents/odw_executor_matrix.md).
+
 ## Agent Tooling & Integrations
 
 This template is **tool-agnostic by default and Claude-ready by symlink**. The
@@ -70,7 +75,10 @@ them through committed symlinks.
   `name` + `description` frontmatter). Claude discovers them at
   `.claude/skills/` (via the symlink); Codex reads `.agents/skills/` directly.
   Current skills: `memory-system`, `reasoning-system`, `open-dynamic-workflows`
-  (vendored symlink).
+  (vendored symlink), and `j-space` (vendored symlink; keep/strip via
+  `jspace_skill` — first-class and independent of `reasoning-system`).
+  Kanban boards and LLM-as-a-Verifier are catalog + setup attestation, not
+  vendored skills; see [`docs/agents/agent_stack.md`](docs/agents/agent_stack.md).
 
 ### Vendored integrations (`vendor/`)
 
@@ -80,11 +88,13 @@ submodules** (same pattern as HarborRunner's `vendor/SnakeInTalons`):
 | Path | Upstream | Role |
 | --- | --- | --- |
 | `vendor/open-dynamic-workflows` | [imsai-sh/open-dynamic-workflows](https://github.com/imsai-sh/open-dynamic-workflows) | Dynamic-workflow runtime + authoring skill (MIT) |
+| `vendor/j-space-cognition-suite` | [Tiger3807861189/J-Space-Cognition-Suite-V3.6](https://github.com/Tiger3807861189/J-Space-Cognition-Suite-V3.6) | Optional J-Space cognition skill (Apache-2.0); `.agents/skills/j-space` symlink |
 
 - Pin by submodule commit (reviewed HEAD recorded in git history / `.gitmodules`).
 - Clone with `git clone --recurse-submodules` or run `git submodule update --init --recursive`.
 - Build ODW (Node ≥20): `cd vendor/open-dynamic-workflows && npm ci && npm run build`.
 - Runtime journals land under `.odw/` (gitignored `runs/`); do not commit agent traces.
+- J-Space has no npm build. Optional controller ledger: `.jspace/` (gitignored).
 
 ### Claude Code plugins (auto-enabled)
 

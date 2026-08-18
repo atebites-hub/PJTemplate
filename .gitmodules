@@ -2,3 +2,7 @@
 	path = vendor/open-dynamic-workflows
 	url = https://github.com/imsai-sh/open-dynamic-workflows.git
 	branch = main
+[submodule "vendor/j-space-cognition-suite"]
+	path = vendor/j-space-cognition-suite
+	url = https://github.com/Tiger3807861189/J-Space-Cognition-Suite-V3.6.git
+	branch = main

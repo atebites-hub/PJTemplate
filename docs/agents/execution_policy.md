@@ -34,7 +34,7 @@ genuinely isolated. **Role-splitting** (planner → implementer → tester as se
 telephone game: information degrades at each handoff and the downstream agent re-derives what the
 upstream one already knew.
 
-## 4. Five orchestration patterns
+## 4. Orchestration patterns
 
 | Pattern | When it applies |
 |---|---|
@@ -42,8 +42,9 @@ upstream one already knew.
 | **Routing** | Classify the input, then dispatch to the specialized handler (cheap model triages; right tier handles). |
 | **Parallelization** | Independent subtasks fanned out, then aggregated (sectioning) or voted (decorrelated checks). |
 | **Orchestrator-worker** *(the default)* | A main thread holds the plan and spawns isolated workers for bounded, context-isolated subtasks (search, exploration, a single review). |
-| **Dynamic workflow (ODW)** | Large / high-risk / many-agent work codified as a JS script under `.agents/workflows/` and run via `./scripts/odw` (skill `open-dynamic-workflows`). Prefer over ad-hoc fan-out when seats must be resumeable or exceed one conversation. See `docs/agents/odw_executor_matrix.md`. |
-| **Evaluator-optimizer** | A builder proposes; a **separate** evaluator judges against a concrete gate; iterate. **This is Feature A's decorrelated acceptance gate** (see §9 and the `reasoning-system` skill, thought 5). |
+| **Agent Kanban** *(optional)* | A local board that assigns cards to CLI agents (usually one git worktree per card). Catalog + `agent_kanban` in `config/setup.toml`; recommended pick if unsure is KanBots OSS. Not a replacement for ODW scripts. See `docs/agents/agent_stack.md` §1. |
+| **Dynamic workflow (ODW)** | Large / high-risk / many-agent work codified as a JS script under `.agents/workflows/` and run via `./scripts/odw` (skill `open-dynamic-workflows`). Prefer over ad-hoc fan-out when seats must be resumeable or exceed one conversation. See `docs/agents/odw_executor_matrix.md`. Optional quality layer: LLM-as-a-Verifier (`odw_verifier`) to rank high-stakes / best-of-N leaves — never wrap every `agent()` call (§6). |
+| **Evaluator-optimizer** | A builder proposes; a **separate** evaluator judges against a concrete gate; iterate. **This is Feature A's decorrelated acceptance gate** (see §9 and the `reasoning-system` skill, thought 5). For ODW/best-of-N scoring at scale, LLM-as-a-Verifier is the cataloged calibrated scorer (`docs/agents/agent_stack.md` §2). |
 
 ## 5. Model routing by where errors are costly
 
@@ -113,6 +114,9 @@ To avoid overlapping planning surfaces, **one** owner of upfront planning:
 
 - **Heavy/architectural planning** → native **plan mode** (or `ultraplan`).
 - **Sub-threshold, in-session changes** → the `reasoning-system` skill.
+
+J-Space (when kept) is **not** a planning owner; it is optional runtime cognition.
+See `docs/agents/agent_stack.md` §3.
 
 The maintainer picks one per context; this is "one owner per function," not a tool ban. Whatever
 produces the plan, the **approved** plan is what the implementation track executes against (§1).

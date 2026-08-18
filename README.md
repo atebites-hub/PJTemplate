@@ -28,6 +28,7 @@ Follow the layout in `/docs/agents/file_structure_doc.md` for modularity.
 ## Key Documents
 - **AGENTS.md**: Rules for AI agents (e.g., Cursor, Claude). `CLAUDE.md` and `.claude/` are symlinks to `AGENTS.md` / `.agents/`, so there is one source of truth.
 - **Dynamic Workflows** (`/open-dynamic-workflows`): [open-dynamic-workflows](https://github.com/imsai-sh/open-dynamic-workflows) runtime, vendored at `vendor/open-dynamic-workflows` (git submodule). Skill: `.agents/skills/open-dynamic-workflows/`. Run: `./scripts/odw run <script.js>`. Executor matrix: `docs/agents/odw_executor_matrix.md`.
+- **Agent stack** (Kanban catalog, ODW verifier, J-Space): `docs/agents/agent_stack.md`. Setup fields: `agent_kanban`, `odw_verifier`, `jspace_skill` in `config/setup.toml`.
 - **Agent Tooling & Integrations** (in AGENTS.md): auto-enabled Claude plugins (compound-engineering, superpowers, ponytail), the GitNexus MCP code-intelligence server, and the cross-tool skill/symlink model.
 - **Memory System**: Tasks and progress via per-task memories and agent todos.
 - **Implementation Plan**: Sprint roadmap in `/docs/agents/implementation_plan.md`.

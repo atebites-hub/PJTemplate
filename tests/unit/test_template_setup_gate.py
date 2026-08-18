@@ -9,7 +9,8 @@ Cases:
 
 Honest scope: these cover dormancy, the incomplete-template invariant, the clean
 happy path, and pin S8 (value 80) + S9 (homoglyph detection) against silent
-removal. They do NOT pin every S-code individually.
+removal. They do NOT pin every S-code individually. S10 (J-Space submodule)
+is keep-only and is not required on the strip happy path used by the fixture.
 
 The gate is bash, so it adds nothing to the src coverage numerator. This file
 lives under tests/, which is OUTSIDE [tool.coverage.run] source = ["src"], so it
@@ -41,6 +42,9 @@ _CLEAN_SETUP_TOML = (
     'odw_runtime = "strip"\n'
     'cd_docker = "strip"\n'
     'notebooks = "strip"\n'
+    'jspace_skill = "strip"\n'
+    'agent_kanban = "none"\n'
+    'odw_verifier = "none"\n'
     'ide_scaffolds = "claude"\n'
     'coverage_floor_pct = "80"\n'
     'defaults_toml_customized = "done"\n'
@@ -82,9 +86,12 @@ def _run_gate(script: Path, *args: str) -> subprocess.CompletedProcess[str]:
 
 
 def _build_repo(dest: Path, *, cov_floor: int = 80, homoglyph: bool = False) -> Path:
-    """A real git repo satisfying every gate check (S1-S9) -> exit 0, unless a
-    dirty knob is set: ``cov_floor`` below 80 trips S8; ``homoglyph`` plants a
-    disguised placeholder that trips S9.
+    """A real git repo satisfying every gate check (S1-S10 on the strip path)
+    -> exit 0, unless a dirty knob is set: ``cov_floor`` below 80 trips S8;
+    ``homoglyph`` plants a disguised placeholder that trips S9.
+
+    S10 is keep-only (``jspace_skill=keep``); the fixture uses ``strip`` so the
+    clean happy path does not clone J-Space.
 
     The gate derives REPO_ROOT from BASH_SOURCE[0], so the script is COPIED into
     the repo and invoked there. git grep / git config / git ls-files need a real
@@ -180,7 +187,7 @@ def test_force_fails_on_real_template() -> None:
 
 @pytest.mark.unit
 def test_clean_fixture_passes(clean_fixture: Path) -> None:
-    """(3) A fully transformed repo (clean fixture) => exit 0 across S1-S9."""
+    """(3) A fully transformed repo (clean fixture) => exit 0 (S10 not required on strip)."""
     result = _run_gate(clean_fixture / "scripts" / "check-template-setup.sh")
     combined = (result.stdout + result.stderr).lower()
     assert result.returncode == 0, combined

@@ -128,13 +128,11 @@ pyenv local "$PYTHON_VERSION"
 echo "==> Activating project git hooks (Tier-1 compliance gate)"
 git config core.hooksPath .githooks
 
-echo "==> Initialising git submodules (vendor/open-dynamic-workflows)"
+echo "==> Initialising git submodules (vendor/open-dynamic-workflows, vendor/j-space-cognition-suite)"
 if [ -f "${PROJECT_ROOT}/.gitmodules" ]; then
-  if [ ! -f "${PROJECT_ROOT}/vendor/open-dynamic-workflows/package.json" ]; then
-    git -C "${PROJECT_ROOT}" submodule update --init --recursive || {
-      echo "WARNING: git submodule update failed — run: git submodule update --init --recursive" >&2
-    }
-  fi
+  git -C "${PROJECT_ROOT}" submodule update --init --recursive || {
+    echo "WARNING: git submodule update failed — run: git submodule update --init --recursive" >&2
+  }
 fi
 
 if [ -f "${PROJECT_ROOT}/vendor/open-dynamic-workflows/package.json" ]; then

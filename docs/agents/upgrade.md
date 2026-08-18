@@ -1,13 +1,13 @@
 # Upgrade & Maintenance Guide
 
 > **Purpose.** How to refresh this template's pinned artifacts (deps, actions,
-> scanner images, the ODW submodule) and how a project derived from this
+> scanner images, the ODW and J-Space submodules) and how a project derived from this
 > template pulls in upstream template fixes. This is a process doc, not one of
 > the 10 core documents.
 >
 > **One rule above all:** *everything is pinned* (Python deps by hash, GitHub
 > Actions by commit SHA, scanner containers by image digest, OpenGrep by
-> SHA-256, ODW by submodule commit). An upgrade is a deliberate, reviewed pin
+> SHA-256, ODW and J-Space by submodule commit). An upgrade is a deliberate, reviewed pin
 > rotation — never a floating reference.
 
 ---
@@ -106,6 +106,22 @@ cd vendor/open-dynamic-workflows && npm ci && npm run build   # rebuild dist/cli
 
 The setup gate's S7 checks `dist/cli.js` exists; S6 checks the submodule is
 initialized when `odw_runtime = "keep"`.
+
+---
+
+## 4b. J-Space submodule (commit-pinned)
+
+No npm build. Pin rotation only:
+
+```bash
+git submodule update --remote vendor/j-space-cognition-suite   # advance to upstream HEAD
+cd vendor/j-space-cognition-suite && git checkout <reviewed-commit> && cd -
+git add vendor/j-space-cognition-suite                         # records the new commit
+```
+
+Confirm `.agents/skills/j-space` still points at `j-space/` inside the tree
+(`SKILL.md` must resolve). The setup gate's **S10** checks the submodule and
+symlink when `jspace_skill = "keep"`.
 
 ---
 

@@ -26,10 +26,21 @@ gitnexus_license = "<TODO>"
 #   odw_runtime          : open-dynamic-workflows (vendor/ submodule + skill + scripts/odw)
 #   cd_docker            : GitHub Actions CD (cd.yml) + Dockerfile + GHCR image build
 #   notebooks            : Jupyter notebook support (notebooks/, requirements-notebooks*)
+#   jspace_skill         : J-Space cognition skill (vendor/ submodule + .agents/skills/j-space)
 observability_stack = "<TODO>"     # "keep" | "strip"
 odw_runtime = "<TODO>"             # "keep" | "strip"
 cd_docker = "<TODO>"               # "keep" | "strip"
 notebooks = "<TODO>"               # "keep" | "strip"
+jspace_skill = "<TODO>"            # "keep" | "strip"
+
+# Agent-stack attestations (catalog + decision; see docs/agents/agent_stack.md).
+#   agent_kanban  : FOSS board pick. Recommended default if unsure: "kanbots".
+#   odw_verifier  : LLM-as-a-Verifier on the ODW quality track (not every agent() leaf).
+#   "none" | "kanbots" | "cline" | "hermes" | "nerkoman" | "slayzone" | "taskboard"
+#   | "openkanban" | "u2dia" | "faru" | "other"
+agent_kanban = "<TODO>"
+#   "none" | "llm-as-a-verifier"
+odw_verifier = "<TODO>"
 
 # IDE / harness scaffolds to wire (comma-separated, lower-case). The bundle lives
 # in scripts/hooks/scaffolds/. Unknown names are ignored. e.g. "claude,cursor,codex"

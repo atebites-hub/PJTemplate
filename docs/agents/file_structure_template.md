@@ -19,7 +19,9 @@ root/
 ├── User_Rules_Template.md      # Platform tool bindings (Cursor/Kilo variants optional)
 ├── README.md                   # Project overview and quick start
 ├── .env.example               # Environment variables template
-├── .gitignore                 # Git ignore patterns
+├── .gitignore                 # Git ignore patterns (.jspace/, .kanbots/, .odw/)
+├── .agents/                   # Skills: memory-system, reasoning-system; ODW + j-space symlinks
+├── vendor/                    # Git submodules (open-dynamic-workflows, j-space-cognition-suite)
 ├── package.json               # Dependencies and scripts (if applicable)
 ├── src/                    # Main application code
 │   ├── client/               # Client-side code
@@ -163,6 +165,8 @@ docs/
 │   ├── testing_guidelines.md
 │   ├── documentation_guidelines.md
 │   └── coding_standards.md
+│   # Process docs (not the 10 core): execution_policy.md, enforcement_matrix.md,
+│   # odw_executor_matrix.md, agent_stack.md, upgrade.md, template_setup_checklist.md
 ├── code/              # Auto-generated code documentation
 │   ├── client/        # Client-side module docs
 │   ├── server/        # Server-side module docs

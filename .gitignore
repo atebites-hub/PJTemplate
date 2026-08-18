@@ -62,3 +62,8 @@ gitnexus-*.tgz
 # vendored ODW install/build (submodule source stays tracked)
 vendor/open-dynamic-workflows/node_modules/
 vendor/open-dynamic-workflows/dist/
+
+# J-Space optional controller ledger (skill is vendored; runtime state is local)
+.jspace/
+# KanBots OSS local workspace DB (catalog recommendation; never vendor the app)
+.kanbots/

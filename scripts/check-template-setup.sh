@@ -41,6 +41,8 @@
 #                     but disguised with a lookalike Unicode char (Cyrillic a,
 #                     Greek o, smart dash). Reports only near-misses the raw
 #                     S3 sweep missed. FAIL, same contract as S3.
+#   S10 jspace        (only if jspace_skill=keep) J-Space submodule initialized
+#                     and .agents/skills/j-space/SKILL.md resolves (symlink)
 #
 # Exit codes: 0 complete (or dormant/skipped), 1 setup incomplete, 2 usage/env error.
 
@@ -122,8 +124,16 @@ setup_val() {
 # valid_decision KEY VALUE -> 0 if VALUE is allowed for KEY, else 1 (closed-world).
 valid_decision() {
   case "$1" in
-    odw_runtime | observability_stack | cd_docker | notebooks)
+    odw_runtime | observability_stack | cd_docker | notebooks | jspace_skill)
       [[ "$2" == "keep" || "$2" == "strip" ]] ;;
+    agent_kanban)
+      case "$2" in
+        none | kanbots | cline | hermes | nerkoman | slayzone | taskboard | openkanban | u2dia | faru | other) true ;;
+        *) false ;;
+      esac
+      ;;
+    odw_verifier)
+      [[ "$2" == "none" || "$2" == "llm-as-a-verifier" ]] ;;
     gitnexus_license)
       [[ "$2" == "keep-noncommercial" || "$2" == "remove-mcp" || "$2" == "licensed-commercial" ]] ;;
     defaults_toml_customized | core_docs_filled | secrets_reviewed | plugin_refs_reviewed | python_version_confirmed)
@@ -139,7 +149,8 @@ valid_decision() {
 # Decision keys validated by S2's closed-world check (must match config/setup.toml).
 DECISION_KEYS=(
   project_name project_slug license_spdx gitnexus_license
-  observability_stack odw_runtime cd_docker notebooks ide_scaffolds
+  observability_stack odw_runtime cd_docker notebooks jspace_skill
+  agent_kanban odw_verifier ide_scaffolds
   coverage_floor_pct
   defaults_toml_customized core_docs_filled secrets_reviewed
   plugin_refs_reviewed python_version_confirmed
@@ -178,13 +189,15 @@ else
   if ((${#bad[@]} > 0)); then
     fail "S2 [decisions]: config/setup.toml has out-of-range or empty decision values:"
     for b in "${bad[@]}"; do note "    $b"; done
-    note "    Allowed: keep|strip (subsystems); keep-noncommercial|remove-mcp|licensed-commercial"
-    note "    (gitnexus); 'done' (review fields); a non-empty string (names); an integer"
-    note "    >=0 (coverage_floor_pct)."
+    note "    Allowed: keep|strip (subsystems, jspace_skill); keep-noncommercial|remove-mcp|licensed-commercial"
+    note "    (gitnexus); none|kanbots|cline|hermes|nerkoman|slayzone|taskboard|openkanban|u2dia|faru|other"
+    note "    (agent_kanban); none|llm-as-a-verifier (odw_verifier); 'done' (review fields);"
+    note "    a non-empty string (names); an integer >=0 (coverage_floor_pct)."
   fi
 fi
 
 ODW_DECISION="$(setup_val odw_runtime)"
+JSPACE_DECISION="$(setup_val jspace_skill)"
 
 # --- S3: placeholder sweep --------------------------------------------------
 #
@@ -356,6 +369,32 @@ if [[ "$ODW_DECISION" == "keep" ]]; then
   if [[ ! -f "$REPO_ROOT/vendor/open-dynamic-workflows/dist/cli.js" ]]; then
     fail "S7 [odw-build]: odw_runtime=keep but vendor/open-dynamic-workflows/dist/cli.js is missing."
     note "    cd vendor/open-dynamic-workflows && npm ci && npm run build   # Node >= 20"
+  fi
+fi
+
+# --- S10: J-Space submodule + skill symlink (decision-aware) --------------
+#
+# Only enforced when jspace_skill=keep. If strip, the submodule is expected to
+# be gone (checklist §5g); the gate does not fail a leftover tree on strip.
+# No npm build — upstream is a skill + stdlib controller.
+
+if [[ "$JSPACE_DECISION" == "keep" ]]; then
+  sub_status="$(git submodule status vendor/j-space-cognition-suite 2>/dev/null)" || true
+  if [[ -z "$sub_status" ]]; then
+    fail "S10 [jspace]: jspace_skill=keep but vendor/j-space-cognition-suite is not registered."
+    note "    git submodule update --init --recursive"
+  elif [[ "$sub_status" == -* ]]; then
+    fail "S10 [jspace]: jspace_skill=keep but the submodule is not initialized (leading '-')."
+    note "    git submodule update --init --recursive"
+  fi
+  skill_link="$REPO_ROOT/.agents/skills/j-space"
+  if [[ ! -L "$skill_link" ]]; then
+    fail "S10 [jspace]: jspace_skill=keep but .agents/skills/j-space is not a symlink."
+    note "    ln -s ../../vendor/j-space-cognition-suite/j-space .agents/skills/j-space"
+  elif [[ ! -f "$skill_link/SKILL.md" ]]; then
+    fail "S10 [jspace]: jspace_skill=keep but .agents/skills/j-space/SKILL.md does not resolve."
+    note "    git submodule update --init --recursive"
+    note "    ln -s ../../vendor/j-space-cognition-suite/j-space .agents/skills/j-space"
   fi
 fi
 
