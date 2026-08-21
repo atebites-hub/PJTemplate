@@ -10,7 +10,8 @@ Cases:
 Honest scope: these cover dormancy, the incomplete-template invariant, the clean
 happy path, and pin S8 (value 80) + S9 (homoglyph detection) against silent
 removal. They do NOT pin every S-code individually. S10 (J-Space submodule)
-is keep-only and is not required on the strip happy path used by the fixture.
+and S11 (Taskboard marketplace) are keep-only and are not required on the strip
+happy path used by the fixture. One extra test pins S11's existence on keep.
 
 The gate is bash, so it adds nothing to the src coverage numerator. This file
 lives under tests/, which is OUTSIDE [tool.coverage.run] source = ["src"], so it
@@ -43,7 +44,7 @@ _CLEAN_SETUP_TOML = (
     'cd_docker = "strip"\n'
     'notebooks = "strip"\n'
     'jspace_skill = "strip"\n'
-    'agent_kanban = "none"\n'
+    'taskboard_plugin = "strip"\n'
     'odw_verifier = "none"\n'
     'ide_scaffolds = "claude"\n'
     'coverage_floor_pct = "80"\n'
@@ -86,12 +87,13 @@ def _run_gate(script: Path, *args: str) -> subprocess.CompletedProcess[str]:
 
 
 def _build_repo(dest: Path, *, cov_floor: int = 80, homoglyph: bool = False) -> Path:
-    """A real git repo satisfying every gate check (S1-S10 on the strip path)
+    """A real git repo satisfying every gate check (S1-S11 on the strip path)
     -> exit 0, unless a dirty knob is set: ``cov_floor`` below 80 trips S8;
     ``homoglyph`` plants a disguised placeholder that trips S9.
 
-    S10 is keep-only (``jspace_skill=keep``); the fixture uses ``strip`` so the
-    clean happy path does not clone J-Space.
+    S10 is keep-only (``jspace_skill=keep``); S11 is keep-only
+    (``taskboard_plugin=keep``). The fixture uses ``strip`` for both so the
+    clean happy path does not clone J-Space or require the Taskboard marketplace.
 
     The gate derives REPO_ROOT from BASH_SOURCE[0], so the script is COPIED into
     the repo and invoked there. git grep / git config / git ls-files need a real
@@ -187,7 +189,7 @@ def test_force_fails_on_real_template() -> None:
 
 @pytest.mark.unit
 def test_clean_fixture_passes(clean_fixture: Path) -> None:
-    """(3) A fully transformed repo (clean fixture) => exit 0 (S10 not required on strip)."""
+    """(3) A fully transformed repo (clean fixture) => exit 0 (S10/S11 not required on strip)."""
     result = _run_gate(clean_fixture / "scripts" / "check-template-setup.sh")
     combined = (result.stdout + result.stderr).lower()
     assert result.returncode == 0, combined
@@ -214,6 +216,23 @@ def test_rejects_coverage_floor_below_80(tmp_path: Path) -> None:
     combined = (result.stdout + result.stderr).lower()
     assert result.returncode == 1, combined
     assert "s8" in combined
+
+
+@pytest.mark.unit
+def test_keep_taskboard_without_marketplace_fails(tmp_path: Path) -> None:
+    """Keep-path S11: marketplace + skill required. Pins S11's existence."""
+    repo = _build_repo(tmp_path)
+    toml_path = repo / "config" / "setup.toml"
+    toml_path.write_text(
+        toml_path.read_text(encoding="utf-8").replace(
+            'taskboard_plugin = "strip"', 'taskboard_plugin = "keep"'
+        ),
+        encoding="utf-8",
+    )
+    result = _run_gate(repo / "scripts" / "check-template-setup.sh")
+    combined = (result.stdout + result.stderr).lower()
+    assert result.returncode == 1, combined
+    assert "s11" in combined
 
 
 # Coverage-floor resolution (the bash gate + this python test):

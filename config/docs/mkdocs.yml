@@ -33,6 +33,7 @@ nav:
       - Execution policy: agents/execution_policy.md
       - ODW executor matrix: agents/odw_executor_matrix.md
       - Agent stack: agents/agent_stack.md
+      - Taskboard plugin design: superpowers/specs/2026-08-20-taskboard-plugin-design.md
   - Test docs:
       - Dev notebooks: tests/notebooks.md
   - Code documentation:

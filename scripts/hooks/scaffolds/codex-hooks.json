@@ -11,6 +11,17 @@
             "statusMessage": "Loading PJTemplate workflow checklist..."
           }
         ]
+      },
+      {
+        "matcher": "startup|resume|clear|compact",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "PJ_HOOK_FORMAT=codex bash \"$(git rev-parse --show-toplevel)/scripts/hooks/taskboard-sync.sh\" session",
+            "timeout": 10,
+            "statusMessage": "Loading Taskboard snapshot..."
+          }
+        ]
       }
     ],
     "Stop": [
@@ -20,6 +31,15 @@
             "type": "command",
             "command": "bash \"$(git rev-parse --show-toplevel)/scripts/check-task-compliance.sh\" --task",
             "timeout": 60
+          }
+        ]
+      },
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"$(git rev-parse --show-toplevel)/scripts/hooks/taskboard-sync.sh\" commit",
+            "timeout": 15
           }
         ]
       }

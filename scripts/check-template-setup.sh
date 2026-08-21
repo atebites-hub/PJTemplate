@@ -43,6 +43,8 @@
 #                     S3 sweep missed. FAIL, same contract as S3.
 #   S10 jspace        (only if jspace_skill=keep) J-Space submodule initialized
 #                     and .agents/skills/j-space/SKILL.md resolves (symlink)
+#   S11 taskboard     (only if taskboard_plugin=keep) marketplace atebites-hub/taskboard
+#                     enabled as taskboard@taskboard and skill SKILL.md present
 #
 # Exit codes: 0 complete (or dormant/skipped), 1 setup incomplete, 2 usage/env error.
 
@@ -124,14 +126,8 @@ setup_val() {
 # valid_decision KEY VALUE -> 0 if VALUE is allowed for KEY, else 1 (closed-world).
 valid_decision() {
   case "$1" in
-    odw_runtime | observability_stack | cd_docker | notebooks | jspace_skill)
+    odw_runtime | observability_stack | cd_docker | notebooks | jspace_skill | taskboard_plugin)
       [[ "$2" == "keep" || "$2" == "strip" ]] ;;
-    agent_kanban)
-      case "$2" in
-        none | kanbots | cline | hermes | nerkoman | slayzone | taskboard | openkanban | u2dia | faru | other) true ;;
-        *) false ;;
-      esac
-      ;;
     odw_verifier)
       [[ "$2" == "none" || "$2" == "llm-as-a-verifier" ]] ;;
     gitnexus_license)
@@ -150,7 +146,7 @@ valid_decision() {
 DECISION_KEYS=(
   project_name project_slug license_spdx gitnexus_license
   observability_stack odw_runtime cd_docker notebooks jspace_skill
-  agent_kanban odw_verifier ide_scaffolds
+  taskboard_plugin odw_verifier ide_scaffolds
   coverage_floor_pct
   defaults_toml_customized core_docs_filled secrets_reviewed
   plugin_refs_reviewed python_version_confirmed
@@ -189,15 +185,15 @@ else
   if ((${#bad[@]} > 0)); then
     fail "S2 [decisions]: config/setup.toml has out-of-range or empty decision values:"
     for b in "${bad[@]}"; do note "    $b"; done
-    note "    Allowed: keep|strip (subsystems, jspace_skill); keep-noncommercial|remove-mcp|licensed-commercial"
-    note "    (gitnexus); none|kanbots|cline|hermes|nerkoman|slayzone|taskboard|openkanban|u2dia|faru|other"
-    note "    (agent_kanban); none|llm-as-a-verifier (odw_verifier); 'done' (review fields);"
+    note "    Allowed: keep|strip (subsystems, jspace_skill, taskboard_plugin); keep-noncommercial|remove-mcp|licensed-commercial"
+    note "    (gitnexus); none|llm-as-a-verifier (odw_verifier); 'done' (review fields);"
     note "    a non-empty string (names); an integer >=0 (coverage_floor_pct)."
   fi
 fi
 
 ODW_DECISION="$(setup_val odw_runtime)"
 JSPACE_DECISION="$(setup_val jspace_skill)"
+TASKBOARD_DECISION="$(setup_val taskboard_plugin)"
 
 # --- S3: placeholder sweep --------------------------------------------------
 #
@@ -395,6 +391,28 @@ if [[ "$JSPACE_DECISION" == "keep" ]]; then
     fail "S10 [jspace]: jspace_skill=keep but .agents/skills/j-space/SKILL.md does not resolve."
     note "    git submodule update --init --recursive"
     note "    ln -s ../../vendor/j-space-cognition-suite/j-space .agents/skills/j-space"
+  fi
+fi
+
+# --- S11: Taskboard plugin marketplace + skill (decision-aware) -----------
+#
+# Only enforced when taskboard_plugin=keep. Strip means remove the marketplace
+# keys and skill copy (checklist §5h); the gate does not fail leftovers on strip.
+# The Go binary is PATH-only and is not checked here.
+
+if [[ "$TASKBOARD_DECISION" == "keep" ]]; then
+  settings="$REPO_ROOT/.agents/settings.json"
+  if [[ ! -f "$settings" ]] || ! grep -q 'atebites-hub/taskboard' "$settings"; then
+    fail "S11 [taskboard]: taskboard_plugin=keep but .agents/settings.json does not register atebites-hub/taskboard."
+    note "    Add extraKnownMarketplaces.taskboard -> github atebites-hub/taskboard (ref main)."
+  fi
+  if [[ ! -f "$settings" ]] || ! grep -q 'taskboard@taskboard' "$settings"; then
+    fail "S11 [taskboard]: taskboard_plugin=keep but taskboard@taskboard is not enabled in .agents/settings.json."
+    note "    Add enabledPlugins[\"taskboard@taskboard\"] = true."
+  fi
+  if [[ ! -f "$REPO_ROOT/.agents/skills/taskboard-workflow/SKILL.md" ]]; then
+    fail "S11 [taskboard]: taskboard_plugin=keep but .agents/skills/taskboard-workflow/SKILL.md is missing."
+    note "    Restore the skill copy from atebites-hub/taskboard skills/taskboard-workflow/SKILL.md."
   fi
 fi
 

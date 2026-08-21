@@ -4,7 +4,8 @@ PJTemplate ships **committed** Tier-2 hooks for the common harnesses. Copy scaff
 here when your team uses a tool that is not pre-wired.
 
 **Canonical script:** `scripts/hooks/session-workflow-checklist.sh`  
-**Checklist text:** `scripts/hooks/workflow-checklist.txt` (edit in one place)
+**Checklist text:** `scripts/hooks/workflow-checklist.txt` (edit in one place)  
+**Taskboard sync (fail-open):** `scripts/hooks/taskboard-sync.sh` (`session` / `commit`)
 
 Set `PJ_HOOK_FORMAT` (or pass the first argument) when auto-detect is wrong:
 

@@ -10,6 +10,16 @@
             "timeout": 10
           }
         ]
+      },
+      {
+        "matcher": "startup|resume|clear|compact",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash scripts/hooks/taskboard-sync.sh session",
+            "timeout": 10
+          }
+        ]
       }
     ],
     "Stop": [
@@ -19,6 +29,15 @@
             "type": "command",
             "command": "bash scripts/check-task-compliance.sh --task",
             "timeout": 60
+          }
+        ]
+      },
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash scripts/hooks/taskboard-sync.sh commit",
+            "timeout": 15
           }
         ]
       }

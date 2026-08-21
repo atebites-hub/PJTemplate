@@ -7,7 +7,7 @@ PJTemplate agent workflow (re-injected on session startup, resume, clear, and af
 5. Build — Inline implementation, or open-dynamic-workflows (author + odw run) when Scope=open-dynamic-workflows.
 6. Before commit — Update task memory and docs/code mirrors for changed src files. Harness Stop runs check-task-compliance.sh --task; git pre-commit enforces C1/C2/C3.
 
-Skills: .agents/skills/memory-system, reasoning-system, open-dynamic-workflows; j-space if the skill is present (independent of reasoning-system)
+Skills: .agents/skills/memory-system, reasoning-system, open-dynamic-workflows; j-space if present (independent of reasoning-system); taskboard-workflow if present
 Enforcement: docs/agents/enforcement_matrix.md
 ODW: vendor/open-dynamic-workflows; matrix: docs/agents/odw_executor_matrix.md
-Agent stack (Kanban / ODW verifier / J-Space): docs/agents/agent_stack.md
+Agent stack (Taskboard / ODW verifier / J-Space): docs/agents/agent_stack.md

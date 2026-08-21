@@ -7,6 +7,12 @@
         "bash": "PJ_HOOK_FORMAT=copilot bash scripts/hooks/session-workflow-checklist.sh",
         "powershell": "$env:PJ_HOOK_FORMAT='copilot'; bash scripts/hooks/session-workflow-checklist.sh",
         "timeoutSec": 10
+      },
+      {
+        "type": "command",
+        "bash": "PJ_HOOK_FORMAT=copilot bash scripts/hooks/taskboard-sync.sh session",
+        "powershell": "$env:PJ_HOOK_FORMAT='copilot'; bash scripts/hooks/taskboard-sync.sh session",
+        "timeoutSec": 10
       }
     ],
     "agentStop": [
@@ -15,6 +21,12 @@
         "bash": "scripts/check-task-compliance.sh --task || exit 2",
         "powershell": "bash scripts/check-task-compliance.sh --task; if ($LASTEXITCODE -ne 0) { exit 2 }",
         "timeoutSec": 60
+      },
+      {
+        "type": "command",
+        "bash": "bash scripts/hooks/taskboard-sync.sh commit",
+        "powershell": "bash scripts/hooks/taskboard-sync.sh commit",
+        "timeoutSec": 15
       }
     ]
   }

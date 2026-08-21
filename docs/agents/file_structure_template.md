@@ -19,8 +19,8 @@ root/
 ├── User_Rules_Template.md      # Platform tool bindings (Cursor/Kilo variants optional)
 ├── README.md                   # Project overview and quick start
 ├── .env.example               # Environment variables template
-├── .gitignore                 # Git ignore patterns (.jspace/, .kanbots/, .odw/)
-├── .agents/                   # Skills: memory-system, reasoning-system; ODW + j-space symlinks
+├── .gitignore                 # Git ignore patterns (.jspace/, .taskboard/, .odw/)
+├── .agents/                   # Skills: memory-system, reasoning-system, taskboard-workflow; ODW + j-space symlinks
 ├── vendor/                    # Git submodules (open-dynamic-workflows, j-space-cognition-suite)
 ├── package.json               # Dependencies and scripts (if applicable)
 ├── src/                    # Main application code

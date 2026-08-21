@@ -125,6 +125,25 @@ symlink when `jspace_skill = "keep"`.
 
 ---
 
+## 4c. Taskboard plugin (marketplace `ref: main`)
+
+The Go binary is not vendored. Rotate the **reviewed HEAD** comment in
+`AGENTS.md` after you merge plugin changes on [atebites-hub/taskboard](https://github.com/atebites-hub/taskboard):
+
+```bash
+git -C /path/to/taskboard rev-parse HEAD
+# record that SHA next to atebites-hub/taskboard in AGENTS.md
+# keep extraKnownMarketplaces.taskboard.source.ref = "main"
+```
+
+Copy `skills/taskboard-workflow/SKILL.md` and `scripts/{session,commit}-sync.sh`
+into this repo (`.agents/skills/taskboard-workflow/` and
+`scripts/hooks/taskboard-sync.sh`) when those files change. The setup gate's
+**S11** checks marketplace registration and the skill file when
+`taskboard_plugin = "keep"`.
+
+---
+
 ## 5. Promote a report-only scanner to blocking
 
 OSV-Scanner, GuardDog, and Trivy ship **report-only** (`continue-on-error`).

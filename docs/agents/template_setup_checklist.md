@@ -172,15 +172,23 @@ merge them). No npm build.
       `git rm`, remove `.agents/skills/j-space`, and drop J-Space rows from
       `AGENTS.md`.
 
-### 5h. Agent Kanban — `agent_kanban`
-Catalog only (nothing is vendored). Ranked FOSS boards live in
-`docs/agents/agent_stack.md` §1. If unsure, pick `kanbots` (KanBots OSS).
-- [ ] ✍️ Record one of: `none`, `kanbots`, `cline`, `hermes`, `nerkoman`,
-      `slayzone`, `taskboard`, `openkanban`, `u2dia`, `faru`, `other`.
+### 5h. Taskboard plugin — `taskboard_plugin`
+Per-repo Taskboard (fork [atebites-hub/taskboard](https://github.com/atebites-hub/taskboard);
+upstream [tcarac/taskboard](https://github.com/tcarac/taskboard)). Catalog:
+`docs/agents/agent_stack.md` §1. Tickets = sprint items; memories stay C3.
+The Go binary is **not** vendored — put `taskboard` on PATH.
+- [ ] ✍️ Record `keep` or `strip`.
+- [ ] 🔒 If `keep`: leave `taskboard` in `.agents/settings.json`
+      (`extraKnownMarketplaces` + `enabledPlugins` `taskboard@taskboard`) and
+      keep `.agents/skills/taskboard-workflow/SKILL.md`. The gate's **S11**
+      checks those. Install: `brew tap tcarac/taskboard && brew install taskboard`.
+- [ ] 🗑️ If `strip`: remove the `taskboard` marketplace and `taskboard@taskboard`
+      keys from `.agents/settings.json`, delete `.agents/skills/taskboard-workflow/`,
+      and drop Taskboard rows from `AGENTS.md`.
 
 ### 5i. ODW verifier — `odw_verifier`
 Catalog only. LLM-as-a-Verifier / TurboAgent as a quality layer on ODW
-leaves — not a Kanban, not every `agent()` call. See
+leaves — not a Taskboard, not every `agent()` call. See
 `docs/agents/agent_stack.md` §2.
 - [ ] ✍️ Record `none` or `llm-as-a-verifier`. Independent of `odw_runtime`;
       most useful when ODW is `keep`.
@@ -238,7 +246,7 @@ The stack runs out of the box, but two decisions are yours.
 
 Agents miss template setup for three structural reasons: (1) setup knowledge is
 scattered across `AGENTS.md`, `README.md`, `setup.sh`, and 13 template docs;
-(2) opt-in subsystems (observability, ODW, CD, Tracee, IDE scaffolds, J-Space) are present
+(2) opt-in subsystems (observability, ODW, CD, Tracee, IDE scaffolds, J-Space, Taskboard) are present
 but nothing forces an explicit yes/no; (3) ~18 distinct placeholders must be
 replaced with no verification. This checklist + `config/setup.toml` + the gate
 close all three gaps. The gate is the machine; this doc is the map.

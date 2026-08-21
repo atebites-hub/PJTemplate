@@ -9,12 +9,16 @@
     },
     "ponytail": {
       "source": { "source": "github", "repo": "DietrichGebert/ponytail", "ref": "main" }
+    },
+    "taskboard": {
+      "source": { "source": "github", "repo": "atebites-hub/taskboard", "ref": "main" }
     }
   },
   "enabledPlugins": {
     "compound-engineering@compound-engineering-plugin": true,
     "superpowers@superpowers-marketplace": true,
-    "ponytail@ponytail": true
+    "ponytail@ponytail": true,
+    "taskboard@taskboard": true
   },
   "hooks": {
     "SessionStart": [

@@ -75,10 +75,11 @@ them through committed symlinks.
   `name` + `description` frontmatter). Claude discovers them at
   `.claude/skills/` (via the symlink); Codex reads `.agents/skills/` directly.
   Current skills: `memory-system`, `reasoning-system`, `open-dynamic-workflows`
-  (vendored symlink), and `j-space` (vendored symlink; keep/strip via
-  `jspace_skill` — first-class and independent of `reasoning-system`).
-  Kanban boards and LLM-as-a-Verifier are catalog + setup attestation, not
-  vendored skills; see [`docs/agents/agent_stack.md`](docs/agents/agent_stack.md).
+  (vendored symlink), `j-space` (vendored symlink; keep/strip via
+  `jspace_skill` — first-class and independent of `reasoning-system`), and
+  `taskboard-workflow` (keep/strip via `taskboard_plugin`; Claude also loads it
+  from the `atebites-hub/taskboard` plugin). LLM-as-a-Verifier is catalog +
+  setup attestation, not a vendored skill; see [`docs/agents/agent_stack.md`](docs/agents/agent_stack.md).
 
 ### Vendored integrations (`vendor/`)
 
@@ -99,7 +100,7 @@ submodules** (same pattern as HarborRunner's `vendor/SnakeInTalons`):
 ### Claude Code plugins (auto-enabled)
 
 `.claude/settings.json` (= `.agents/settings.json` via the symlink) registers and
-enables three marketplaces. On first launch Claude prompts each user to trust and
+enables four marketplaces. On first launch Claude prompts each user to trust and
 install them (the prompt is per-user and is skipped in headless `-p` mode — see
 the manual fallback below).
 
@@ -108,6 +109,7 @@ the manual fallback below).
 | `compound-engineering` | `EveryInc/compound-engineering-plugin` | "Compound engineering" workflow: planning/review-heavy skills (`/ce-plan`, `/ce-code-review`, `/ce-debug`, …) + review/research subagents. Run `/ce-setup` once after install. |
 | `superpowers` | `obra/superpowers-marketplace` | Core skills library (TDD, systematic debugging, brainstorming, writing/executing plans, code review, git worktrees). Ships a SessionStart hook. |
 | `ponytail` | `DietrichGebert/ponytail` | "Lazy senior dev mode" — biases toward the simplest, smallest solution (YAGNI, stdlib-first). |
+| `taskboard` | `atebites-hub/taskboard` | Per-repo Taskboard MCP + sprint-ticket skill + fail-open session/commit hooks. Binary on PATH; SQLite at `.taskboard/taskboard.db`. |
 
 **Manual fallback** (if a plugin isn't auto-installed):
 
@@ -118,6 +120,8 @@ the manual fallback below).
 /plugin install superpowers@superpowers-marketplace
 /plugin marketplace add DietrichGebert/ponytail
 /plugin install ponytail@ponytail
+/plugin marketplace add atebites-hub/taskboard
+/plugin install taskboard@taskboard
 ```
 
 **Other tools.** Each plugin repo also ships Codex/Cursor adapters, e.g. Codex:
@@ -135,9 +139,11 @@ the manual fallback below).
 > **Reviewed marketplace HEADs (2026-06-19):** `EveryInc/compound-engineering-plugin`
 > `c759a26041559360e7b10148dd407406e716fc3b`, `obra/superpowers-marketplace`
 > `6d4bfbc48a3b83723267957731b3a6583ac229e3`, `DietrichGebert/ponytail`
-> `0403c4dd50ee6d0db2c3ec70b2be6655f9cb65a9`. `ponytail` is a recently-published repo;
-> vet it before trusting it. Any change to `.claude/settings.json` is watched by the
-> npm-worm/persistence audit (`config/security/npm-worm-audit.json`).
+> `0403c4dd50ee6d0db2c3ec70b2be6655f9cb65a9`. **Taskboard fork (2026-08-20):**
+> `atebites-hub/taskboard` `ed227b3c01c7143981979ec33b1e455720fd00f5`. `ponytail`
+> is a recently-published repo; vet it before trusting it. Any change to
+> `.claude/settings.json` is watched by the npm-worm/persistence audit
+> (`config/security/npm-worm-audit.json`).
 
 ### GitNexus (MCP code intelligence)
 
@@ -271,3 +277,17 @@ The single completion checklist is [`.github/PULL_REQUEST_TEMPLATE.md`](.github/
 - Keep track of your progress on a task via the todo system. Conduct end to end tests frequently, using browser tools to mimic the user's journey and app flow to ensure work is not breaking the app.
 - Use web search to verify implementations for tasks align with industry standards before you work on them. If you cannot find previous implementation examples from the web, create your own implementation but document your journey thoroughly in the module's documentation in `docs/code/`
 - The key to successfully completing tasks is to raise questions to the user at the right time when you need assistance or more information, then raise the question before starting a new todo item or completing the task. When raising questions, also update the task `memory`. Specifically "Requests" in the 'Feedback' section.
+
+## Learned User Preferences
+- Name tools by their identifiers (for example `sequentialthinking`); do not brand them as MCP Docker, because hosts register the same tools under different servers.
+- Put project skills under `.agents/skills/`, not `.cursor/skills/`.
+- When core template documents overlap, keep the rule in one owning doc and cross-reference; do not duplicate sections.
+- Keep this repo's memory-system short: when and how to use `docs/memories/`, without comparing it to other agents' built-in memory.
+- Keep TCREI only in the memory template; do not restate it throughout the repo.
+- Prefer bootstrap scripts such as `setup.sh` that work on both macOS and Debian.
+
+## Learned Workspace Facts
+- This template does not include REPL/RLM skills; they were added and then fully removed.
+- MkDocs `site/` is gitignored and should not be committed.
+- MkDocs should not require `architecture.md`, `workflow.md`, `current-state.md`, or `gotchas.md`.
+- Python smoke tests live under `tests/e2e/`.

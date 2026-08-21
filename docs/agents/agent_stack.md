@@ -1,4 +1,4 @@
-# Agent stack — Kanban, ODW verifier, J-Space
+# Agent stack — Taskboard, ODW verifier, J-Space
 
 > **Process doc** (not one of the 10 core product documents). One map of three
 > **independent** layers this template cares about. Record the corresponding
@@ -8,7 +8,7 @@ Three jobs, three decisions. Do not merge them.
 
 | Layer | What it decides | Setup field | In this repo |
 | --- | --- | --- | --- |
-| **Coordination (Kanban)** | What work happens, who runs it, card status | `agent_kanban` | Catalog only — no vendor |
+| **Coordination (Taskboard)** | What work happens, card status for sprint items | `taskboard_plugin` | Claude plugin marketplace + in-tree skill/hooks; binary on PATH |
 | **Orchestration quality (ODW + verifier)** | Which parallel trajectories are actually good | `odw_verifier` | Catalog only — no vendor |
 | **Cognition (J-Space)** | How a long-running model holds goals, seams, and recovery | `jspace_skill` | Optional submodule + skill symlink |
 
@@ -16,62 +16,55 @@ Three jobs, three decisions. Do not merge them.
 (C3 task-memory fields). J-Space does not fill TCREI; `reasoning-system` does not
 speak J-Space. They may both run on one task because they write to different places.
 
-Canonical pointers: this file (catalog), `docs/agents/odw_executor_matrix.md`
+Canonical pointers: this file (map), `docs/agents/odw_executor_matrix.md`
 (executors), `docs/agents/execution_policy.md` (when to orchestrate),
-`docs/agents/template_setup_checklist.md` §5g–5i (keep/strip / attest).
+`docs/agents/template_setup_checklist.md` §5g–5i (keep/strip / attest),
+`docs/superpowers/specs/2026-08-20-taskboard-plugin-design.md` (plugin design).
 
 ---
 
-## 1. Agent Kanban (coordination)
+## 1. Taskboard (coordination)
 
-Role: a board that assigns cards to CLI coding agents, usually with a git
-worktree per card. **Not** a replacement for ODW scripts (`./scripts/odw`). Use a
-board to see and dispatch work; use ODW when the fan-out must be a rerunnable JS
-workflow.
+Role: a local board for sprint tickets. **Not** a replacement for ODW scripts
+(`./scripts/odw`) and **not** a replacement for `docs/memories/` (C3). Use the
+board to see ticket status; use memories for reasoning; use ODW when the fan-out
+must be a rerunnable JS workflow.
 
-`config/setup.toml` `agent_kanban` (closed-world):
+`config/setup.toml` `taskboard_plugin`: `keep | strip`
 
-`none | kanbots | cline | hermes | nerkoman | slayzone | taskboard | openkanban | u2dia | faru | other`
+| Piece | Where |
+| --- | --- |
+| Fork / marketplace | [atebites-hub/taskboard](https://github.com/atebites-hub/taskboard) (upstream [tcarac/taskboard](https://github.com/tcarac/taskboard), MIT) |
+| Claude plugin | `taskboard@taskboard` via `.agents/settings.json` |
+| Skill (Cursor/Codex too) | `.agents/skills/taskboard-workflow/` |
+| SQLite | `.taskboard/taskboard.db` (gitignored; **never** the default Application Support DB) |
+| Binary | PATH — `brew tap tcarac/taskboard && brew install taskboard` or `make build` in the fork |
 
-If you have no existing board, pick **`kanbots`**. Pick `none` if a board would
-only add ceremony. Pick `other` if you use a board not listed here.
+**Tickets** = one per sprint item in `docs/agents/implementation_plan.md`.
+After create, write `Taskboard: <ticket-uuid>` on the matching memory. Hooks
+only auto-move tickets with that link.
 
-A local KanBots workspace writes `.kanbots/` next to the repo; that path is
-gitignored. Do not commit agent DBs.
+**keep:** leave the marketplace + `enabledPlugins` entry, keep the skill copy.
+The setup gate's **S11** checks those. Install the binary on PATH yourself.
 
-### Ranked FOSS boards
+**strip:** remove `taskboard` from `.agents/settings.json`
+(`extraKnownMarketplaces` and `enabledPlugins`), delete
+`.agents/skills/taskboard-workflow/`, and drop Taskboard rows from `AGENTS.md`.
+Hook scripts may stay (they exit 0 without the binary).
 
-| Rank | Project | License | Why it is in this list | Best for | `agent_kanban` |
-| --- | --- | --- | --- | --- | --- |
-| 1 (recommended default) | [KanBots OSS](https://github.com/leodavinci1/kanbots) | MIT | Local-first desktop; parallel agents on worktrees; 11+ CLIs; autopilot/personas; MCP; no telemetry in OSS | Polished multi-CLI local board | `kanbots` |
-| 2 | [Cline Kanban](https://github.com/cline/kanban) | Apache-2.0 | Official Cline team board (`npx kanban`); worktree + terminal per card; dependency linking; research preview | Closest match to Cline’s own stack | `cline` |
-| 3 | [Hermes Kanban](https://github.com/NousResearch/hermes-agent) (built-in) | MIT | Durable SQLite board (`~/.hermes/kanban.db`); dispatcher/workers/heartbeats; survives restarts | Already on (or willing to use) Hermes Agent | `hermes` |
-| 4 | [SlayZone](https://github.com/debuglebowski/slayzone) | Open source (local) | Desktop board: real PTY + browser panel + worktree per card; MCP for agents | Terminals-first visual control | `slayzone` |
-| 5 | [nerkoman/agent-kanban](https://github.com/nerkoman/agent-kanban) | MIT | Local SQLite + FastAPI; MCP + OpenAPI; drag to Approved and the agent drives the card | Simple MCP-native, no cloud | `nerkoman` |
+`taskboard start --db .taskboard/taskboard.db` serves the UI on `:3010`.
 
-### Also worth knowing
-
-| Project | License / shape | Notes | `agent_kanban` |
-| --- | --- | --- | --- |
-| [tcarac/taskboard](https://github.com/tcarac/taskboard) | Single binary, SQLite, Homebrew | Kanban UI + CLI + MCP (22 tools); embedded terminal | `taskboard` |
-| [TechDufus/openkanban](https://github.com/TechDufus/openkanban) | TUI | Tickets = worktrees + embedded terminals; any CLI agent | `openkanban` |
-| [U2SY26/u2dia-kanban](https://github.com/U2SY26/u2dia-kanban) | Zero-dep Python, MCP | Claude Code teams; real-time SSE | `u2dia` |
-| [fluado/faru](https://github.com/fluado/faru) | Markdown + Git | Ultra-minimal; cards are files | `faru` |
-
-[saltbo/agent-kanban](https://github.com/saltbo/agent-kanban) (agent-kanban.dev) is
-self-hostable (leader-worker, Ed25519 identities, Cloudflare). It is **not** the
-recommended primary for this template: the FOSS boards above are closer in
-maturity, local-first posture, and integration depth.
-
-Nothing in this section is installed by `./scripts/setup.sh`.
+The Go binary is **not** vendored. MCP's 22 tools stay upstream; this template
+does not reimplement them.
 
 ---
 
 ## 2. LLM-as-a-Verifier (ODW quality layer)
 
 Role: rank candidate trajectories and monitor progress with calibrated scores
-instead of a discrete 1–5 “LLM-as-a-Judge.” Orthogonal to Kanban. **Complementary
-to ODW**: ODW fans out `agent()` leaves; the verifier helps pick the good ones.
+instead of a discrete 1–5 “LLM-as-a-Judge.” Orthogonal to Taskboard.
+**Complementary to ODW**: ODW fans out `agent()` leaves; the verifier helps pick
+the good ones.
 
 `config/setup.toml` `odw_verifier`: `none | llm-as-a-verifier`
 
@@ -125,6 +118,7 @@ Upgrade (pin rotation): `docs/agents/upgrade.md` (no `npm run build`).
 
 ## Quick guidance
 
-- Want a local multi-CLI board → `agent_kanban = "kanbots"` (or `cline` / `hermes` if you already live there).
+- Want sprint tickets on a local board → `taskboard_plugin = "keep"` and put
+  `taskboard` on PATH.
 - Want durable many-agent scripts → keep `odw_runtime`; optionally `odw_verifier = "llm-as-a-verifier"` for high-stakes leaves.
 - Want long-horizon workspace control → `jspace_skill = "keep"`; leave `reasoning-system` required either way.

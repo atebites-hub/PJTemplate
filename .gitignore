@@ -65,5 +65,5 @@ vendor/open-dynamic-workflows/dist/
 
 # J-Space optional controller ledger (skill is vendored; runtime state is local)
 .jspace/
-# KanBots OSS local workspace DB (catalog recommendation; never vendor the app)
-.kanbots/
+# Taskboard per-repo SQLite (never commit the board DB)
+.taskboard/
