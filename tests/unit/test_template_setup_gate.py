@@ -258,9 +258,7 @@ def test_repo_does_not_catalog_odw_transcript_scorer() -> None:
             text=True,
             check=False,
         )
-        assert result.returncode == 1, (
-            f"catalog token {needle!r} still present:\n{result.stdout}"
-        )
+        assert result.returncode == 1, f"catalog token {needle!r} still present:\n{result.stdout}"
 
 
 # Coverage-floor resolution (the bash gate + this python test):
