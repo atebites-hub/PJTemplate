@@ -114,8 +114,8 @@ into a real project:
   present when `taskboard_plugin` is kept;
 - **decisions** — `config/setup.toml` has no unresolved `<TODO>` fields, so every
   subsystem (observability, ODW, CD, notebooks, IDE scaffolds, J-Space,
-  Taskboard) has an explicit keep/strip decision, the verifier attestation is
-  recorded, and the GitNexus noncommercial license is addressed.
+  Taskboard) has an explicit keep/strip decision, and the GitNexus
+  noncommercial license is addressed.
 
 It is **dormant by design**: while the marker file `.template-scaffold` exists the
 repo is the pristine template, so the gate prints one line and exits 0. Step 1 of

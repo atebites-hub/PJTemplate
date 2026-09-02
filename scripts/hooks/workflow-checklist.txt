@@ -10,4 +10,4 @@ PJTemplate agent workflow (re-injected on session startup, resume, clear, and af
 Skills: .agents/skills/memory-system, reasoning-system, open-dynamic-workflows; j-space if present (independent of reasoning-system); taskboard-workflow if present
 Enforcement: docs/agents/enforcement_matrix.md
 ODW: vendor/open-dynamic-workflows; matrix: docs/agents/odw_executor_matrix.md
-Agent stack (Taskboard / ODW verifier / J-Space): docs/agents/agent_stack.md
+Agent stack (Taskboard / ODW / J-Space): docs/agents/agent_stack.md

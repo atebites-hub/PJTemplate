@@ -43,8 +43,8 @@ upstream one already knew.
 | **Parallelization** | Independent subtasks fanned out, then aggregated (sectioning) or voted (decorrelated checks). |
 | **Orchestrator-worker** *(the default)* | A main thread holds the plan and spawns isolated workers for bounded, context-isolated subtasks (search, exploration, a single review). |
 | **Taskboard** *(optional)* | A local board for sprint tickets (one card per item in `implementation_plan.md`). Plugin + `taskboard_plugin` in `config/setup.toml`; SQLite at `.taskboard/taskboard.db`. Not a replacement for ODW scripts or C3 memories. See `docs/agents/agent_stack.md` §1. |
-| **Dynamic workflow (ODW)** | Large / high-risk / many-agent work codified as a JS script under `.agents/workflows/` and run via `./scripts/odw` (skill `open-dynamic-workflows`). Prefer over ad-hoc fan-out when seats must be resumeable or exceed one conversation. See `docs/agents/odw_executor_matrix.md`. Optional quality layer: LLM-as-a-Verifier (`odw_verifier`) to rank high-stakes / best-of-N leaves — never wrap every `agent()` call (§6). |
-| **Evaluator-optimizer** | A builder proposes; a **separate** evaluator judges against a concrete gate; iterate. **This is Feature A's decorrelated acceptance gate** (see §9 and the `reasoning-system` skill, thought 5). For ODW/best-of-N scoring at scale, LLM-as-a-Verifier is the cataloged calibrated scorer (`docs/agents/agent_stack.md` §2). |
+| **Dynamic workflow (ODW)** | Large / high-risk / many-agent work codified as a JS script under `.agents/workflows/` and run via `./scripts/odw` (skill `open-dynamic-workflows`). Prefer over ad-hoc fan-out when seats must be resumeable or exceed one conversation. See `docs/agents/odw_executor_matrix.md` and `docs/agents/agent_stack.md` §2. |
+| **Evaluator-optimizer** | A builder proposes; a **separate** evaluator judges against a concrete gate; iterate. **This is Feature A's decorrelated acceptance gate** (see §9 and the `reasoning-system` skill, thought 5). |
 
 ## 5. Model routing by where errors are costly
 

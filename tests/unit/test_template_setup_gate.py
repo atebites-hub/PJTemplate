@@ -6,12 +6,14 @@ Cases:
   (3) a synthesized clean repo     -> exit 0 (all checks OK) [tmp git fixture]
   (4) clean repo + a homoglyph     -> exit 1, names S9       [pins S9's existence]
   (5) clean repo + cov floor < 80  -> exit 1, names S8       [pins the 80 floor]
+  (6) repo-wide grep of old ODW scorer catalog tokens -> empty
 
 Honest scope: these cover dormancy, the incomplete-template invariant, the clean
 happy path, and pin S8 (value 80) + S9 (homoglyph detection) against silent
 removal. They do NOT pin every S-code individually. S10 (J-Space submodule)
 and S11 (Taskboard marketplace) are keep-only and are not required on the strip
 happy path used by the fixture. One extra test pins S11's existence on keep.
+Another pins that the removed ODW transcript-scoring catalog stays gone.
 
 The gate is bash, so it adds nothing to the src coverage numerator. This file
 lives under tests/, which is OUTSIDE [tool.coverage.run] source = ["src"], so it
@@ -45,7 +47,6 @@ _CLEAN_SETUP_TOML = (
     'notebooks = "strip"\n'
     'jspace_skill = "strip"\n'
     'taskboard_plugin = "strip"\n'
-    'odw_verifier = "none"\n'
     'ide_scaffolds = "claude"\n'
     'coverage_floor_pct = "80"\n'
     'defaults_toml_customized = "done"\n'
@@ -235,11 +236,38 @@ def test_keep_taskboard_without_marketplace_fails(tmp_path: Path) -> None:
     assert "s11" in combined
 
 
+@pytest.mark.unit
+def test_repo_does_not_catalog_odw_transcript_scorer() -> None:
+    """The optional ODW transcript-scoring catalog and its setup field are gone.
+
+    Needles are built from concatenations so this file itself does not contain
+    the contiguous tokens a repo-wide grep is expected to find empty.
+    """
+    needles = (
+        "odw_" + "verifier",
+        "llm-as-a-" + "verifier",
+        "llm-" + "verifier",
+        "Turbo" + "Agent",
+        "llm-as-a-" + "verifier.com",
+    )
+    for needle in needles:
+        result = subprocess.run(
+            ["git", "grep", "-n", "-F", "-I", needle, "--", "."],
+            cwd=REPO_ROOT,
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+        assert result.returncode == 1, (
+            f"catalog token {needle!r} still present:\n{result.stdout}"
+        )
+
+
 # Coverage-floor resolution (the bash gate + this python test):
 #   * --cov=src  AND  [tool.coverage.run] source = ["src"]  => only src/** is
 #     measured. tests/** is outside `source`, so this file is neither numerator
 #     nor denominator. The bash script is not python. Net: the 80% floor is
 #     unchanged. No pragma/omit/mark is needed.
 #   * If a future config adds tests/ to `source`, every line here still executes
-#     during the run (all helpers are called by the five tests), so coverage of
+#     during the run (all helpers are called by the tests), so coverage of
 #     this file is effectively 100% -- still no drag.

@@ -1,15 +1,16 @@
-# Agent stack — Taskboard, ODW verifier, J-Space
+# Agent stack — Taskboard, ODW, J-Space
 
 > **Process doc** (not one of the 10 core product documents). One map of three
 > **independent** layers this template cares about. Record the corresponding
-> decisions in `config/setup.toml`. Only J-Space is vendored.
+> decisions in `config/setup.toml`. ODW and J-Space are vendored; Taskboard is
+> a plugin plus a PATH binary.
 
 Three jobs, three decisions. Do not merge them.
 
 | Layer | What it decides | Setup field | In this repo |
 | --- | --- | --- | --- |
 | **Coordination (Taskboard)** | What work happens, card status for sprint items | `taskboard_plugin` | Claude plugin marketplace + in-tree skill/hooks; binary on PATH |
-| **Orchestration quality (ODW + verifier)** | Which parallel trajectories are actually good | `odw_verifier` | Catalog only — no vendor |
+| **Orchestration (ODW)** | How many-agent work is fanned out as a rerunnable JS workflow | `odw_runtime` | Vendored submodule + skill symlink + `scripts/odw` |
 | **Cognition (J-Space)** | How a long-running model holds goals, seams, and recovery | `jspace_skill` | Optional submodule + skill symlink |
 
 `reasoning-system` is **not** a fourth catalog entry. It is a required project gate
@@ -18,7 +19,7 @@ speak J-Space. They may both run on one task because they write to different pla
 
 Canonical pointers: this file (map), `docs/agents/odw_executor_matrix.md`
 (executors), `docs/agents/execution_policy.md` (when to orchestrate),
-`docs/agents/template_setup_checklist.md` §5g–5i (keep/strip / attest),
+`docs/agents/template_setup_checklist.md` §5b and §5g–5h (keep/strip),
 `docs/superpowers/specs/2026-08-20-taskboard-plugin-design.md` (plugin design).
 
 ---
@@ -59,27 +60,38 @@ does not reimplement them.
 
 ---
 
-## 2. LLM-as-a-Verifier (ODW quality layer)
+## 2. Open-dynamic-workflows (orchestration)
 
-Role: rank candidate trajectories and monitor progress with calibrated scores
-instead of a discrete 1–5 “LLM-as-a-Judge.” Orthogonal to Taskboard.
-**Complementary to ODW**: ODW fans out `agent()` leaves; the verifier helps pick
-the good ones.
+Role: a model-/harness-agnostic runtime that executes a plain JS workflow
+script (`export const meta` + `agent()` / `parallel()` / `pipeline()` /
+`phase()`), fanning each leaf out to a named CLI executor. **Not** a replacement
+for Taskboard tickets or `docs/memories/` (C3). Use ODW when the fan-out must be
+a rerunnable script; use Taskboard for sprint-card status; use memories for
+reasoning.
 
-`config/setup.toml` `odw_verifier`: `none | llm-as-a-verifier`
+`config/setup.toml` `odw_runtime`: `keep | strip`
 
-Independent of `odw_runtime`. Most useful when ODW is `keep`. Do **not** wrap
-every `agent()` call — N candidates times M leaves compounds cost
-(`execution_policy.md` §6). Use it on high-stakes leaves and best-of-N, not on
-cheap navigation.
+| Piece | Path |
+| --- | --- |
+| Submodule | `vendor/open-dynamic-workflows` (commit-pinned) |
+| Skill | `.agents/skills/open-dynamic-workflows` → upstream skill in that tree |
+| CLI | `./scripts/odw` (wraps `vendor/.../dist/cli.js`) |
+| Committed scripts | Optional `.agents/workflows/*.js` |
+| Executor matrix | `docs/agents/odw_executor_matrix.md` |
 
-| Piece | URL | Use |
-| --- | --- | --- |
-| Framework | [llm-as-a-verifier/llm-as-a-verifier](https://github.com/llm-as-a-verifier/llm-as-a-verifier) | Fine-grained logprob scoring, ranking, progress signals |
-| Coding-agent install | [TurboAgent](https://github.com/llm-as-a-verifier/TurboAgent) | Drop-in API proxy for Claude Code / Codex-class clients |
+Every `agent()` **must** set `{ executor: '…' }` to a name in the host registry
+(bundled: `claude`, `codex`, `grok`, `cursor`). Leaf quality is **Feature A**:
+the `reasoning-system` Evaluation field names a concrete command that exits
+0/1 (see `execution_policy.md` §6 and §9). Do not substitute a second model
+scoring how finished transcripts look.
 
-Executor names and headless CLI flags stay in `docs/agents/odw_executor_matrix.md`.
-This layer does not add an ODW builtin executor.
+**keep:** initialize the submodule (`git submodule update --init --recursive`),
+then `npm ci && npm run build` in the vendor tree (Node ≥ 20). The setup gate's
+**S6/S7** check registration and `dist/cli.js`.
+
+**strip:** `git submodule deinit -f vendor/open-dynamic-workflows`, `git rm`
+that path, remove `.agents/skills/open-dynamic-workflows`, `scripts/odw`, and
+the ODW sections of `AGENTS.md`.
 
 ---
 
@@ -120,5 +132,5 @@ Upgrade (pin rotation): `docs/agents/upgrade.md` (no `npm run build`).
 
 - Want sprint tickets on a local board → `taskboard_plugin = "keep"` and put
   `taskboard` on PATH.
-- Want durable many-agent scripts → keep `odw_runtime`; optionally `odw_verifier = "llm-as-a-verifier"` for high-stakes leaves.
+- Want durable many-agent scripts → `odw_runtime = "keep"`; build `dist/cli.js`.
 - Want long-horizon workspace control → `jspace_skill = "keep"`; leave `reasoning-system` required either way.

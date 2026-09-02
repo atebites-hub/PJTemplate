@@ -66,12 +66,9 @@ Status legend:
    [imsai-sh/open-dynamic-workflows](https://github.com/imsai-sh/open-dynamic-workflows).
 5. **Do not** pretend IDE-only tools are executors; keep Scope=`inline` and use that
    harness's native subagents if you cannot spawn a headless leaf.
-6. **Quality / ranking** (optional, catalog only): LLM-as-a-Verifier ranks
-   candidate trajectories via scoring-token logprobs; TurboAgent is the
-   practical Claude Code / Codex proxy. Use on high-stakes or best-of-N
-   `agent()` leaves — not every leaf (`execution_policy.md` §6). Setup field
-   `odw_verifier`; catalog: `docs/agents/agent_stack.md` §2. This is not a new
-   builtin executor.
+6. **Leaf quality** is Feature A: name a concrete command that exits 0/1 in the
+   task memory `Evaluation` field (`execution_policy.md` §6 and §9). ODW fans
+   out seats; it does not score how finished transcripts look.
 
 ## Related paths
 
@@ -82,4 +79,4 @@ Status legend:
 | `./scripts/odw` | Wrapper around `vendor/.../dist/cli.js` |
 | `.agents/workflows/` | Optional committed `*.js` workflow scripts |
 | `AGENTS.md` → Dynamic Workflows | Operator-facing summary |
-| `docs/agents/agent_stack.md` §2 | ODW + LLM-as-a-Verifier catalog |
+| `docs/agents/agent_stack.md` §2 | ODW orchestration (keep/strip) |
