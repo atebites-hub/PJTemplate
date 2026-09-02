@@ -11,15 +11,33 @@ jobs:
   dependency-review:
     runs-on: ubuntu-latest
     steps:
-      - name: Explain private personal repo fallback
-        if: ${{ github.event.repository.private == true && github.event.repository.owner.type == 'User' }}
+      # GitHub's Dependency Review action needs Dependency graph. That is off
+      # (or GHAS-gated) on some public and private clones; the action then
+      # fails the job with "not supported on this repository". Probe first so
+      # this template stays green; lockfile gates in ci.yml still enforce.
+      - name: Detect dependency graph
+        id: graph
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
-          echo "::notice title=Dependency Review skipped::GitHub Dependency Review requires Code Security/GHAS for private repositories. The other CI lockfile gates (pip-audit, OSV-Scanner, GuardDog, OpenGrep) remain enforced."
+          set -euo pipefail
+          if gh api "repos/${GITHUB_REPOSITORY}/dependency-graph/sbom" >/dev/null 2>&1; then
+            echo "enabled=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "enabled=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Explain skip when Dependency graph is unavailable
+        if: ${{ steps.graph.outputs.enabled != 'true' }}
+        run: |
+          echo "::notice title=Dependency Review skipped::GitHub Dependency Review needs Dependency graph (Settings → Code security). The other CI lockfile gates (pip-audit, OSV-Scanner, GuardDog, OpenGrep) remain enforced."
           cat <<'MARKDOWN' >> "$GITHUB_STEP_SUMMARY"
           ## Dependency Review skipped
 
-          GitHub's Dependency Review action is unavailable for this private
-          personal-account repository without GitHub Code Security/GHAS.
+          GitHub's Dependency Review action is unavailable because Dependency
+          graph is not enabled on this repository (or GitHub Code Security/GHAS
+          is required and not present). Enable it under
+          **Settings → Code security** to turn this check on.
 
           This workflow is passing intentionally for that repository shape.
           Dependency security remains enforced by the main CI lockfile gates:
@@ -27,11 +45,11 @@ jobs:
           MARKDOWN
 
       - name: Checkout
-        if: ${{ github.event.repository.private != true || github.event.repository.owner.type != 'User' }}
+        if: ${{ steps.graph.outputs.enabled == 'true' }}
         uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
 
       - name: Dependency Review
-        if: ${{ github.event.repository.private != true || github.event.repository.owner.type != 'User' }}
+        if: ${{ steps.graph.outputs.enabled == 'true' }}
         uses: actions/dependency-review-action@2031cfc080254a8a887f58cffee85186f0e49e48 # v4
         with:
           fail-on-severity: moderate
