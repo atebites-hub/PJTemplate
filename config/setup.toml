@@ -35,11 +35,6 @@ notebooks = "<TODO>"               # "keep" | "strip"
 jspace_skill = "<TODO>"            # "keep" | "strip"
 taskboard_plugin = "<TODO>"        # "keep" | "strip"
 
-# Agent-stack attestation (catalog + decision; see docs/agents/agent_stack.md).
-#   odw_verifier  : LLM-as-a-Verifier on the ODW quality track (not every agent() leaf).
-#   "none" | "llm-as-a-verifier"
-odw_verifier = "<TODO>"
-
 # IDE / harness scaffolds to wire (comma-separated, lower-case). The bundle lives
 # in scripts/hooks/scaffolds/. Unknown names are ignored. e.g. "claude,cursor,codex"
 ide_scaffolds = "<TODO>"

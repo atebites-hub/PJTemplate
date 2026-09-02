@@ -65,7 +65,9 @@ exclude = [
 target-version = "py312"
 line-length = 100
 src = ["src", "tests"]
-extend-exclude = ["notebooks/**/*.ipynb"]
+# vendor/ is third-party (ODW JS + J-Space). CI checks out submodules
+# recursively; OpenGrep already --exclude vendor. Do not lint upstream trees.
+extend-exclude = ["notebooks/**/*.ipynb", "vendor"]
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "B", "UP", "D"]

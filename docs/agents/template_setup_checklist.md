@@ -116,7 +116,8 @@ deps (8): `prometheus-client`, `opentelemetry-api`, `-sdk`,
 ### 5b. Open-dynamic-workflows — `odw_runtime`
 Vendor submodule `vendor/open-dynamic-workflows/`, skill
 `.agents/skills/open-dynamic-workflows/`, runner `scripts/odw`, matrix
-`docs/agents/odw_executor_matrix.md`.
+`docs/agents/odw_executor_matrix.md`. Catalog:
+`docs/agents/agent_stack.md` §2.
 - [ ] ✍️ Record `keep` or `strip`.
 - [ ] 🔒 If `keep`: build it — `cd vendor/open-dynamic-workflows && npm ci && npm run build`
       (Node ≥ 20); the gate checks `dist/cli.js` exists.
@@ -185,13 +186,6 @@ The Go binary is **not** vendored — put `taskboard` on PATH.
 - [ ] 🗑️ If `strip`: remove the `taskboard` marketplace and `taskboard@taskboard`
       keys from `.agents/settings.json`, delete `.agents/skills/taskboard-workflow/`,
       and drop Taskboard rows from `AGENTS.md`.
-
-### 5i. ODW verifier — `odw_verifier`
-Catalog only. LLM-as-a-Verifier / TurboAgent as a quality layer on ODW
-leaves — not a Taskboard, not every `agent()` call. See
-`docs/agents/agent_stack.md` §2.
-- [ ] ✍️ Record `none` or `llm-as-a-verifier`. Independent of `odw_runtime`;
-      most useful when ODW is `keep`.
 
 ---
 

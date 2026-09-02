@@ -128,8 +128,6 @@ valid_decision() {
   case "$1" in
     odw_runtime | observability_stack | cd_docker | notebooks | jspace_skill | taskboard_plugin)
       [[ "$2" == "keep" || "$2" == "strip" ]] ;;
-    odw_verifier)
-      [[ "$2" == "none" || "$2" == "llm-as-a-verifier" ]] ;;
     gitnexus_license)
       [[ "$2" == "keep-noncommercial" || "$2" == "remove-mcp" || "$2" == "licensed-commercial" ]] ;;
     defaults_toml_customized | core_docs_filled | secrets_reviewed | plugin_refs_reviewed | python_version_confirmed)
@@ -146,7 +144,7 @@ valid_decision() {
 DECISION_KEYS=(
   project_name project_slug license_spdx gitnexus_license
   observability_stack odw_runtime cd_docker notebooks jspace_skill
-  taskboard_plugin odw_verifier ide_scaffolds
+  taskboard_plugin ide_scaffolds
   coverage_floor_pct
   defaults_toml_customized core_docs_filled secrets_reviewed
   plugin_refs_reviewed python_version_confirmed
@@ -186,7 +184,7 @@ else
     fail "S2 [decisions]: config/setup.toml has out-of-range or empty decision values:"
     for b in "${bad[@]}"; do note "    $b"; done
     note "    Allowed: keep|strip (subsystems, jspace_skill, taskboard_plugin); keep-noncommercial|remove-mcp|licensed-commercial"
-    note "    (gitnexus); none|llm-as-a-verifier (odw_verifier); 'done' (review fields);"
+    note "    (gitnexus); 'done' (review fields);"
     note "    a non-empty string (names); an integer >=0 (coverage_floor_pct)."
   fi
 fi

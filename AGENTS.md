@@ -47,12 +47,9 @@ that need independent seats (audits, large migrations, multi-angle plans). **Not
 for one-file fixes or ordinary inline work — keep `Scope: inline` for those.
 
 **Setup:** `git submodule update --init --recursive` then build the vendor package
-(Node ≥20). `scripts/setup.sh` does this when Node is present.
-
-Optional quality layer for high-stakes / best-of-N leaves: LLM-as-a-Verifier
-(catalog + `odw_verifier` in `config/setup.toml`). Do not wrap every `agent()`
-call. See [`docs/agents/agent_stack.md`](docs/agents/agent_stack.md) §2 and
-[`docs/agents/odw_executor_matrix.md`](docs/agents/odw_executor_matrix.md).
+(Node ≥20). `scripts/setup.sh` does this when Node is present. Keep/strip:
+`odw_runtime` in [`config/setup.toml`](config/setup.toml); map:
+[`docs/agents/agent_stack.md`](docs/agents/agent_stack.md) §2.
 
 ## Agent Tooling & Integrations
 
@@ -78,8 +75,8 @@ them through committed symlinks.
   (vendored symlink), `j-space` (vendored symlink; keep/strip via
   `jspace_skill` — first-class and independent of `reasoning-system`), and
   `taskboard-workflow` (keep/strip via `taskboard_plugin`; Claude also loads it
-  from the `atebites-hub/taskboard` plugin). LLM-as-a-Verifier is catalog +
-  setup attestation, not a vendored skill; see [`docs/agents/agent_stack.md`](docs/agents/agent_stack.md).
+  from the `atebites-hub/taskboard` plugin). Layer map:
+  [`docs/agents/agent_stack.md`](docs/agents/agent_stack.md).
 
 ### Vendored integrations (`vendor/`)
 
@@ -291,3 +288,5 @@ The single completion checklist is [`.github/PULL_REQUEST_TEMPLATE.md`](.github/
 - MkDocs `site/` is gitignored and should not be committed.
 - MkDocs should not require `architecture.md`, `workflow.md`, `current-state.md`, or `gotchas.md`.
 - Python smoke tests live under `tests/e2e/`.
+- This template does not catalog an ODW leaf-ranking scorer; verification is
+  Feature A / reasoning-system Evaluation: a concrete command that exits 0/1.
