@@ -103,7 +103,9 @@ reportUnnecessaryComparison = false
 [tool.interrogate]
 fail-under = 90
 style = "google"
-exclude = ["build", "dist", "docs", ".venv", "logs"]
+# vendor/: third-party (CI recursive submodule checkout). tests/: ruff already
+# ignores D there. Measure first-party modules, not upstream trees.
+exclude = ["build", "dist", "docs", ".venv", "logs", "vendor", "tests"]
 
 [tool.pip-tools]
 generate-hashes = true
