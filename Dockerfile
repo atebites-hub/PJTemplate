@@ -1,6 +1,6 @@
 # syntax=docker/dockerfile:1.7
 
-FROM python:3.12.12-slim-bookworm AS builder
+FROM python:3.12.14-slim-bookworm AS builder
 
 ENV DEBIAN_FRONTEND=noninteractive \
     PYTHONDONTWRITEBYTECODE=1 \
@@ -28,7 +28,7 @@ COPY pyproject.toml README.md ./
 COPY src ./src
 RUN python -m pip install --no-deps .
 
-FROM python:3.12.12-slim-bookworm AS runtime
+FROM python:3.12.14-slim-bookworm AS runtime
 
 ENV DEBIAN_FRONTEND=noninteractive \
     PYTHONDONTWRITEBYTECODE=1 \
