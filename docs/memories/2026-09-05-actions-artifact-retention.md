@@ -22,10 +22,10 @@
   3. Lock the contract with `tests/unit/test_artifact_retention.py`; note the 3-day window in `docs/agents/upgrade.md` §5 and `docs/tests/artifact_retention.md`.
 
 ## Status
-- state: in_progress
+- state: completed
 - started: 2026-09-05T18:54:00Z
-- updated: 2026-09-05T19:00:00Z
-- completed:
+- updated: 2026-09-05T19:10:00Z
+- completed: 2026-09-05T19:10:00Z
 
 ## Lessons
 ### Background & Motivation
@@ -42,3 +42,5 @@
 
 ### Learnings
 - Changing `retention-days` does not rewrite TTL on artifacts already stored; a delete pass is required to drain the existing pile.
+- `docs/memories/*.md` is gitignored; this repo already force-tracks task memories when they should travel with the PR.
+- Gate `python -m pytest -q tests/unit/test_artifact_retention.py` and `./scripts/test-suite.sh` both green (42 passed).
