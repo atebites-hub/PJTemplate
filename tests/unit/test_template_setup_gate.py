@@ -65,6 +65,7 @@ _PRECOMMIT = (
 # S8: cov-fail-under>=80 on a non-comment line. pyproject is NOT in the S3
 # exclude list, so it must contain NO template placeholder literals.
 def _pyproject(floor: int) -> str:
+    """Return a minimal pyproject.toml that pins the coverage floor."""
     return f'[tool.pytest.ini_options]\naddopts = "--cov-fail-under={floor}"\n'
 
 

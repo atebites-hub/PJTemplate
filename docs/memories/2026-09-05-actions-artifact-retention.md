@@ -39,6 +39,7 @@
 
 ### Feedback & Assistance
 - User specified retention 3 (max 7), keep uploads, weekday schedule + `workflow_dispatch`, SHA-pinned cleanup, PR explaining quota impact.
+- Follow-up: Interrogate failed at 71.9%. Do not lower fail-under. Add docstrings so the new tests (and existing test misses that kept main red) pass; keep `vendor/` excluded because CI checks out submodules.
 
 ### Learnings
 - Changing `retention-days` does not rewrite TTL on artifacts already stored; a delete pass is required to drain the existing pile.

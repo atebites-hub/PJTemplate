@@ -1,4 +1,9 @@
-"""Guard: Actions uploads expire quickly and a cleanup workflow is present."""
+"""Guard Actions artifact retention so CI uploads cannot sit for ~90 days.
+
+These checks lock the contract in ``.github/workflows``: every
+``actions/upload-artifact`` step sets a short ``retention-days``, and
+``cleanup-artifacts.yml`` is present, scheduled, and SHA-pinned.
+"""
 
 from __future__ import annotations
 

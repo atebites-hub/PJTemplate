@@ -103,9 +103,8 @@ reportUnnecessaryComparison = false
 [tool.interrogate]
 fail-under = 90
 style = "google"
-# tests: ruff already ignores pydocstyle (D) on tests/**. vendor: submodule
-# trees (CI checks them out recursively; they must not set the docstring floor).
-exclude = ["build", "dist", "docs", ".venv", "logs", "tests", "vendor"]
+# vendor: git submodules (CI checks them out recursively). Not project code.
+exclude = ["build", "dist", "docs", ".venv", "logs", "vendor"]
 
 [tool.pip-tools]
 generate-hashes = true

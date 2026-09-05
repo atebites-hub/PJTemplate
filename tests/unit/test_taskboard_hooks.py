@@ -17,6 +17,7 @@ _SAFE_PATH = "/usr/bin:/bin:/usr/sbin:/sbin"
 
 
 def _run(mode: str, *, env: dict[str, str]) -> subprocess.CompletedProcess[str]:
+    """Invoke the Taskboard hook script in the given mode."""
     return subprocess.run(
         [BASH, str(SCRIPT), mode],
         capture_output=True,
@@ -29,6 +30,7 @@ def _run(mode: str, *, env: dict[str, str]) -> subprocess.CompletedProcess[str]:
 
 @pytest.mark.unit
 def test_session_exits_zero_without_binary(tmp_path: Path) -> None:
+    """Session hook is fail-open when the taskboard binary is missing."""
     env = {
         **os.environ,
         "PATH": _SAFE_PATH,
@@ -42,6 +44,7 @@ def test_session_exits_zero_without_binary(tmp_path: Path) -> None:
 
 @pytest.mark.unit
 def test_commit_exits_zero_without_binary(tmp_path: Path) -> None:
+    """Commit hook is fail-open when the taskboard binary is missing."""
     env = {
         **os.environ,
         "PATH": _SAFE_PATH,
@@ -53,6 +56,7 @@ def test_commit_exits_zero_without_binary(tmp_path: Path) -> None:
 
 @pytest.mark.unit
 def test_commit_moves_completed_linked_ticket(tmp_path: Path) -> None:
+    """Commit hook moves a completed, UUID-linked ticket to done."""
     bin_dir = tmp_path / "bin"
     bin_dir.mkdir()
     log = tmp_path / "log.txt"
@@ -93,6 +97,7 @@ def test_commit_moves_completed_linked_ticket(tmp_path: Path) -> None:
 
 @pytest.mark.unit
 def test_commit_skips_when_db_missing(tmp_path: Path) -> None:
+    """Commit hook does not call taskboard when the local DB is absent."""
     bin_dir = tmp_path / "bin"
     bin_dir.mkdir()
     log = tmp_path / "log.txt"

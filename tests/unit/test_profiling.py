@@ -27,6 +27,7 @@ def _settings(
     span_profiles: bool = True,
     metrics_enabled: bool = False,
 ) -> Settings:
+    """Build a Settings object with the requested observability flags."""
     return Settings(
         app=AppConfig(name="yourapp", env="test"),
         observability=ObservabilityConfig(
@@ -66,6 +67,7 @@ def test_configure_profiling_calls_sdk_with_aligned_tags(
     _reset_profiling_state: MagicMock,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
+    """Configure the SDK once with service, env, and process-role tags."""
     mock_pyroscope = _reset_profiling_state
     settings = _settings()
 
@@ -89,6 +91,7 @@ def test_configure_profiling_calls_sdk_with_aligned_tags(
 
 
 def test_configure_profiling_idempotent(_reset_profiling_state: MagicMock) -> None:
+    """A second configure call must not invoke the SDK again."""
     mock_pyroscope = _reset_profiling_state
     settings = _settings()
 
@@ -102,6 +105,7 @@ def test_configure_profiling_registers_span_processor(
     _reset_profiling_state: MagicMock,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
+    """When span profiles are on, attach PyroscopeSpanProcessor to the provider."""
     settings = _settings(span_profiles=True)
     provider = TracerProvider()
     add_mock = MagicMock()
@@ -128,6 +132,7 @@ def test_configure_profiling_skips_span_bridge_when_disabled(
     _reset_profiling_state: MagicMock,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
+    """Span-bridge registration is skipped when span profiles are disabled."""
     settings = _settings(span_profiles=False)
     provider = TracerProvider()
     add_mock = MagicMock()
@@ -148,6 +153,7 @@ def test_configure_profiling_skips_span_bridge_when_disabled(
 def test_shutdown_profiling_calls_sdk(
     _reset_profiling_state: MagicMock,
 ) -> None:
+    """Shutdown after configure must call the SDK and clear the configured flag."""
     mock_pyroscope = _reset_profiling_state
     settings = _settings()
     profiling_mod.configure_profiling(settings)
@@ -160,6 +166,7 @@ def test_shutdown_profiling_calls_sdk(
 def test_shutdown_profiling_noop_when_not_configured(
     _reset_profiling_state: MagicMock,
 ) -> None:
+    """Shutdown is a no-op when profiling was never configured."""
     mock_pyroscope = _reset_profiling_state
     profiling_mod.shutdown_profiling()
     mock_pyroscope.shutdown.assert_not_called()
@@ -168,6 +175,7 @@ def test_shutdown_profiling_noop_when_not_configured(
 def test_profile_tags_uses_tag_wrapper(
     _reset_profiling_state: MagicMock,
 ) -> None:
+    """profile_tags must wrap the block with the SDK tag_wrapper."""
     mock_pyroscope = _reset_profiling_state
     cm = MagicMock()
     cm.__enter__ = MagicMock(return_value=None)
@@ -184,22 +192,28 @@ def test_setup_telemetry_skips_profiling_when_disabled(
     monkeypatch: pytest.MonkeyPatch,
     _reset_profiling_state: MagicMock,
 ) -> None:
+    """setup_telemetry must not configure profiling when the flag is off."""
     settings = _settings(profiling_enabled=False)
     calls: list[str] = []
 
     def _dirs(_s: Settings) -> None:
+        """Record that runtime dirs were ensured."""
         calls.append("dirs")
 
     def _log(_s: Settings) -> None:
+        """Record that logging was configured."""
         calls.append("log")
 
     def _trace(**_kwargs: Any) -> None:
+        """Record that tracing was configured."""
         calls.append("trace")
 
     def _profile(*_a: Any, **_k: Any) -> None:
+        """Record that profiling was configured."""
         calls.append("profile")
 
     def _metrics(*_a: Any, **_k: Any) -> None:
+        """Record that metrics were configured."""
         calls.append("metrics")
 
     monkeypatch.setattr(telemetry_mod, "ensure_runtime_dirs", _dirs)
@@ -218,22 +232,28 @@ def test_setup_telemetry_enables_profiling_after_tracing(
     monkeypatch: pytest.MonkeyPatch,
     _reset_profiling_state: MagicMock,
 ) -> None:
+    """Profiling is configured after tracing when both flags are on."""
     settings = _settings(profiling_enabled=True, tracing_enabled=True)
     order: list[str] = []
 
     def _dirs(_s: Settings) -> None:
+        """Record dirs setup order."""
         order.append("dirs")
 
     def _log(_s: Settings) -> None:
+        """Record logging setup order."""
         order.append("log")
 
     def _trace(**_kwargs: Any) -> None:
+        """Record tracing setup order."""
         order.append("trace")
 
     def _profile(_settings_arg: Settings, process_role: str = "api") -> None:
+        """Record profiling setup order and the process role."""
         order.append(f"profile:{process_role}")
 
     def _metrics(*_a: Any, **_k: Any) -> None:
+        """Record metrics setup order."""
         order.append("metrics")
 
     monkeypatch.setattr(telemetry_mod, "ensure_runtime_dirs", _dirs)
@@ -251,10 +271,12 @@ def test_setup_telemetry_api_process_role(
     monkeypatch: pytest.MonkeyPatch,
     _reset_profiling_state: MagicMock,
 ) -> None:
+    """An ASGI app uses the api process role for profiling."""
     settings = _settings(profiling_enabled=True, tracing_enabled=False, metrics_enabled=False)
     roles: list[str] = []
 
     def _noop_settings(_s: Settings) -> None:
+        """Stand-in for dirs/logging that records no side effects."""
         return None
 
     def _profile(
@@ -262,6 +284,7 @@ def test_setup_telemetry_api_process_role(
         process_role: str = "api",
         **_kwargs: Any,
     ) -> None:
+        """Capture the process_role passed to configure_profiling."""
         roles.append(process_role)
 
     monkeypatch.setattr(telemetry_mod, "ensure_runtime_dirs", _noop_settings)
@@ -275,10 +298,12 @@ def test_setup_telemetry_api_process_role(
 
 
 def test_profiling_config_rejects_bad_sample_rate() -> None:
+    """sample_rate of 0 is invalid."""
     with pytest.raises(ValidationError):
         ProfilingConfig(sample_rate=0)
 
 
 def test_profiling_config_rejects_empty_server_address() -> None:
+    """A blank server_address is invalid."""
     with pytest.raises(ValidationError):
         ProfilingConfig(server_address="   ")
