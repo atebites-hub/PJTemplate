@@ -149,7 +149,7 @@ into this repo (`.agents/skills/taskboard-workflow/` and
 OSV-Scanner, GuardDog, and Trivy ship **report-only** (`continue-on-error`).
 Promote one after curating its ignore file:
 
-1. Run CI once, download the `supply-chain-reports` artifact, read the JSON.
+1. Run CI once, download the `supply-chain-reports` artifact (retained 3 days), read the JSON.
 2. Add each accepted finding's ID to the matching ignore file
    (`config/security/osv-scanner.toml`, `guarddog.json`, or `trivyignore`) with
    an owner + reason.
