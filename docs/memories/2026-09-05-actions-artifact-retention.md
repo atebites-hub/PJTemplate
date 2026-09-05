@@ -44,3 +44,4 @@
 - Changing `retention-days` does not rewrite TTL on artifacts already stored; a delete pass is required to drain the existing pile.
 - `docs/memories/*.md` is gitignored; this repo already force-tracks task memories when they should travel with the PR.
 - Gate `python -m pytest -q tests/unit/test_artifact_retention.py` and `./scripts/test-suite.sh` both green (42 passed).
+- CI Interrogate was already red on main (~72%) because it scored `tests/` and vendored submodules. Exclude those paths so the 90% floor applies to project code; ruff already ignores D on tests.

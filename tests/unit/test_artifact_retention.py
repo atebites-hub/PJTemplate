@@ -28,6 +28,7 @@ def _with_block_after(lines: list[str], start: int) -> str:
 
 @pytest.mark.unit
 def test_every_upload_artifact_sets_short_retention() -> None:
+    """Fail if any upload-artifact step omits retention-days or exceeds 7 days."""
     found = 0
     for path in sorted(WORKFLOWS.glob("*.yml")):
         lines = path.read_text(encoding="utf-8").splitlines()
@@ -46,6 +47,7 @@ def test_every_upload_artifact_sets_short_retention() -> None:
 
 @pytest.mark.unit
 def test_cleanup_artifacts_workflow_is_scheduled_and_pinned() -> None:
+    """Fail if the cleanup workflow is missing, unscheduled, or not SHA-pinned."""
     path = WORKFLOWS / "cleanup-artifacts.yml"
     assert path.is_file(), "expected .github/workflows/cleanup-artifacts.yml"
     text = path.read_text(encoding="utf-8")
