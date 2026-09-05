@@ -1,0 +1,86 @@
+# Sweep Actions artifacts so storage quota is not held by stale CI uploads.
+# New uploads already set retention-days: 3; this job drains older 90-day
+# leftovers and any future upload that omits a TTL.
+name: cleanup-artifacts
+
+on:
+  schedule:
+    # Weekly Monday; weekday-only so it does not run on weekends.
+    - cron: "15 6 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: write
+
+concurrency:
+  group: cleanup-artifacts
+  cancel-in-progress: false
+
+jobs:
+  delete-old-artifacts:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Delete expired artifacts and those older than 3 days
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+        with:
+          script: |
+            const MAX_AGE_MS = 3 * 24 * 60 * 60 * 1000;
+            const cutoff = Date.now() - MAX_AGE_MS;
+            const { owner, repo } = context.repo;
+
+            const artifacts = await github.paginate(
+              github.rest.actions.listArtifactsForRepo,
+              { owner, repo, per_page: 100 },
+            );
+
+            let deleted = 0;
+            let alreadyGone = 0;
+            let kept = 0;
+            let failures = 0;
+            let bytesFreed = 0;
+
+            for (const artifact of artifacts) {
+              const createdMs = Date.parse(artifact.created_at);
+              const tooOld = Number.isFinite(createdMs) && createdMs < cutoff;
+              const expired = artifact.expired === true;
+              if (!tooOld && !expired) {
+                kept += 1;
+                continue;
+              }
+
+              try {
+                await github.rest.actions.deleteArtifact({
+                  owner,
+                  repo,
+                  artifact_id: artifact.id,
+                });
+                deleted += 1;
+                bytesFreed += artifact.size_in_bytes || 0;
+                core.info(
+                  `Deleted ${artifact.name} id=${artifact.id} expired=${expired} created=${artifact.created_at} bytes=${artifact.size_in_bytes}`,
+                );
+              } catch (error) {
+                if (error.status === 404) {
+                  alreadyGone += 1;
+                  core.info(`Already gone: ${artifact.name} id=${artifact.id}`);
+                  continue;
+                }
+                failures += 1;
+                core.warning(
+                  `Failed to delete ${artifact.name} id=${artifact.id}: ${error.message}`,
+                );
+              }
+            }
+
+            const mib = (bytesFreed / (1024 * 1024)).toFixed(2);
+            const summary =
+              `cleanup-artifacts: deleted=${deleted} already_gone=${alreadyGone} ` +
+              `kept=${kept} failures=${failures} bytes_freed=${bytesFreed} ` +
+              `(~${mib} MiB) cutoff=${new Date(cutoff).toISOString()}`;
+            core.info(summary);
+            await core.summary.addHeading("Artifact cleanup").addRaw(summary).write();
+
+            if (failures > 0) {
+              core.setFailed(`${failures} artifact delete(s) failed`);
+            }

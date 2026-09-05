@@ -103,7 +103,8 @@ reportUnnecessaryComparison = false
 [tool.interrogate]
 fail-under = 90
 style = "google"
-exclude = ["build", "dist", "docs", ".venv", "logs"]
+# vendor: git submodules (CI checks them out recursively). Not project code.
+exclude = ["build", "dist", "docs", ".venv", "logs", "vendor"]
 
 [tool.pip-tools]
 generate-hashes = true
