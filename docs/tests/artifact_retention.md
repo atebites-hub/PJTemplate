@@ -1,7 +1,7 @@
 # Actions artifact retention
 
 CI uploads (`supply-chain-reports`, `dist`) must expire in 3 days so they do
-not fill GitHub Actions storage. A weekly cleanup job deletes leftovers.
+not fill GitHub Actions storage. GitHub applies that TTL on each new upload.
 
 ## Run
 
@@ -15,4 +15,4 @@ python -m pytest -q tests/unit/test_artifact_retention.py
 |------|-------------------|
 | `upload-artifact` without `retention-days` | unit test fails |
 | `retention-days` greater than 7 | unit test fails |
-| missing `cleanup-artifacts.yml` or unpinned `uses:` | unit test fails |
+| no `upload-artifact` steps in workflows | unit test fails |

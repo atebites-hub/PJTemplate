@@ -8,6 +8,7 @@
 
 ## Related Memories
 - None prior for Actions storage / artifact retention.
+- [2026-10-19 remove weekly artifact-cleanup cron](2026-10-19-remove-cleanup-artifacts-workflow.md) — the scheduled sweeper described here was removed. `retention-days: 3` on uploads remains.
 
 ## Task (TCREI)
 - **Task**: Cap artifact lifetime at 3 days and add an idempotent weekly cleanup so existing 90-day artifacts drain.
