@@ -23,10 +23,10 @@
   5. Open a PR against `main` whose description lists the removed files.
 
 ## Status
-- state: in_progress
+- state: completed
 - started: 2026-10-19T23:10:00Z
-- updated: 2026-10-19T23:15:00Z
-- completed:
+- updated: 2026-10-19T23:25:00Z
+- completed: 2026-10-19T23:25:00Z
 
 ## Lessons
 ### Background & Motivation
@@ -43,3 +43,4 @@ The owner asked to remove the weekly artifact-cleanup cron. New uploads already 
 
 ### Learnings
 - The only machine check that required the workflow file was `test_cleanup_artifacts_workflow_is_scheduled_and_pinned`. No script or template-setup check referenced it.
+- Gate passed: workflow file absent, `python -m pytest -q tests/unit/test_artifact_retention.py` → 1 passed. `ruff check` and `ruff format --check` on that file were clean.
